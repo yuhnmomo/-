@@ -31,17 +31,6 @@ export interface ChatMessage {
 
 // --- TYPES FOR CHARACTER CREATION ---
 
-export enum CreationStep {
-  START,
-  AWAITING_GENDER,
-  AWAITING_NAME,
-  AWAITING_NICKNAME,
-  AWAITING_ZODIAC,
-  AWAITING_AVATAR,
-  AWAITING_APPEARANCE,
-  COMPLETED,
-}
-
 export interface Attributes {
   O: number; // Observation
   I: number; // Insight
@@ -60,6 +49,7 @@ export interface Player {
   gender: '男' | '女';
   name: string;
   nickname: string;
+  salutation: string;
   zodiac: string;
   appearance: Appearance;
   attributes: Attributes;

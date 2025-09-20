@@ -4,42 +4,38 @@
 */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChatMessage, Character, MessageSender, Player, CreationStep } from '../types'; 
+import { ChatMessage, Character, MessageSender, Player } from '../types'; 
 import MessageItem from './MessageItem';
-import { Send, Menu, Users, Paperclip } from 'lucide-react';
+import { Send, Users, RefreshCw } from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
   onSendMessage: (query: string) => void;
   isLoading: boolean;
-  onToggleSidebar?: () => void;
   activeCharacter: Character | null;
   player: Player | null;
   favorability?: number;
-  creationStep?: CreationStep;
-  onAvatarUpload?: (file: File) => void;
+  onRestartConversation: (characterId: string) => void;
 }
 
-const FAVORABILITY_LEVELS: Record<number, string> = {
-  "0": "陌生",
-  "1": "認識",
-  "2": "友好",
-  "3": "信賴",
-  "4": "親密",
-  "5": "命定",
-  "-1": "敵對",
+const getFavorabilityLevelString = (value: number): string => {
+  if (value < 0) return "敵對";
+  if (value < 1) return "陌生";
+  if (value < 2) return "認識";
+  if (value < 3) return "友好";
+  if (value < 4) return "信賴";
+  if (value < 5) return "親密";
+  return "命定";
 };
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({ 
   messages, 
   onSendMessage, 
-  isLoading, 
-  onToggleSidebar,
+  isLoading,
   activeCharacter,
   player,
   favorability = 0,
-  creationStep,
-  onAvatarUpload,
+  onRestartConversation,
 }) => {
   const [userQuery, setUserQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -57,12 +53,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
   
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file && onAvatarUpload) {
-      onAvatarUpload(file);
+  const handleRestart = () => {
+    if (activeCharacter && window.confirm(`您確定要重新開始與 ${activeCharacter.name.split(' (')[0]} 的對話嗎？\n\n系統會先為您將整段對話生成一份最終摘要並存入筆記本，好感度不會受到影響。`)) {
+      onRestartConversation(activeCharacter.id);
     }
-    event.target.value = ''; // Reset to allow re-uploading the same file
   };
 
   const placeholderText = activeCharacter 
@@ -74,42 +68,42 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     <div className="flex flex-col h-full bg-[#20232c]/80 backdrop-blur-sm rounded-xl shadow-md border border-white/10">
       <div className="p-4 border-b border-white/10 flex justify-between items-center flex-shrink-0">
         <div className="flex items-center gap-3">
-          {onToggleSidebar && (
-            <button 
-              onClick={onToggleSidebar}
-              className="p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-white/10 transition-colors md:hidden"
-              aria-label="開啟角色選單"
-            >
-              <Menu size={20} />
-            </button>
-          )}
           {activeCharacter ? (
             <>
-              <div className="w-10 h-10 rounded-full bg-[#333744] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+              <div className="w-12 h-12 rounded-full bg-[#333744] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden ml-14 md:ml-0">
                 {activeCharacter.avatar.startsWith('http') ? (
                   <img src={activeCharacter.avatar} alt={activeCharacter.name} className="w-full h-full object-cover" />
                 ) : (
                   activeCharacter.avatar
                 )}
               </div>
-              <div>
+              <div className="flex items-center gap-2">
                 <h2 className="text-xl font-semibold text-[#EFEFF1]">{activeCharacter.name}</h2>
+                <button 
+                  onClick={handleRestart}
+                  disabled={isLoading}
+                  className="p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="重新開始對話"
+                  title="重新開始對話"
+                >
+                  <RefreshCw size={16} />
+                </button>
               </div>
             </>
           ) : (
-             <h2 className="text-xl font-semibold text-[#EFEFF1]">魔幻列車聊天室</h2>
+             <h2 className="text-xl font-semibold text-[#EFEFF1] ml-14 md:ml-0">魔幻列車聊天室</h2>
           )}
         </div>
       </div>
       
-      {player && activeCharacter?.id !== 'system_creator' && (
+      {player && (
         <div className="p-2 px-4 text-xs text-[#C9CBE0] bg-black/20 border-b border-white/10 flex flex-wrap items-center gap-x-4 gap-y-1 flex-shrink-0">
-          <span>玩家：{player.name}({player.nickname})</span>
+          <span>玩家：{player.name} ({player.nickname} / {player.salutation})</span>
           <span>⚤ 性別：{player.gender}</span>
           <span>👤 外觀：{player.appearance.name}</span>
           <span>⭐ 星座：{player.zodiac}</span>
           <span className="font-bold text-[#ECD4D4]/90">️‍🔥 情慾：{player.lust}/100</span>
-          <span className="font-bold text-[#ECD4D4]/90">💞 好感度：{FAVORABILITY_LEVELS[favorability]}</span>
+          <span className="font-bold text-[#ECD4D4]/90">💞 好感度：{getFavorabilityLevelString(favorability)}</span>
         </div>
       )}
 
@@ -148,18 +142,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               }
             }}
           />
-          {creationStep === CreationStep.AWAITING_AVATAR && (
-            <label htmlFor="avatar-upload" className="h-10 w-10 p-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors flex items-center justify-center flex-shrink-0 cursor-pointer" aria-label="上傳頭像">
-              <Paperclip size={20} />
-              <input
-                id="avatar-upload"
-                type="file"
-                accept="image/png, image/jpeg, image/gif, image/webp"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </label>
-          )}
           <button
             onClick={handleSend}
             disabled={isLoading || !userQuery.trim() || !activeCharacter}

@@ -5,13 +5,17 @@
 
 // FIX: Import useState, useEffect, and useCallback from React to fix missing definition errors.
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChatMessage, MessageSender, Character, Player, Appearance, CreationStep } from './types';
+import { ChatMessage, MessageSender, Character, Player, Appearance } from './types';
 import { sendMessageToCharacter, generateConversationSummary } from './services/geminiService';
 import CharacterSelector from './components/KnowledgeBaseManager';
 import ChatInterface from './components/ChatInterface';
 import AgeVerification from './components/AgeVerification';
 import GameLoadScreen from './components/GameLoadScreen';
 import RelationshipStatus from './components/RelationshipStatus';
+import Settings from './components/Settings';
+import CharacterCreation from './components/CharacterCreation';
+import { Menu, X } from 'lucide-react';
+import Notebook from './components/Notebook';
 
 
 // --- DATA FOR CHARACTER CREATION ---
@@ -46,33 +50,11 @@ const FEMALE_APPEARANCES: Appearance[] = [
   { id: 'APP09', name: '時尚魅力系', description: '身高:171cm | 臉型:立體輪廓 | 髮型:大波浪長髮或俐落短髮 | 五官:高挑鳳眼、唇珠明顯、鼻梁高挺 | 服裝:時尚套裝或貼身連衣裙 | 氣質:自信有型、眼神吸引', attributes: { O: 3, I: 2, B: 3, S: 3 } },
   { id: 'APP10', name: '自然森系', description: '身高:163cm | 臉型:小巧瓜子臉 | 髮型:微卷中長髮 | 五官:眼神恬靜、鼻樑小巧、嘴唇粉嫩 | 服裝:寬鬆連衣裙配草編飾品 | 氣質:溫婉靜謐、親近自然', attributes: { O: 1, I: 2, B: 1, S: 4 } },
   { id: 'APP11', name: '酷感潮流系', description: '身高:164cm | 臉型:小V臉 | 髮型:俐落短髮或狼尾剪 | 五官:長鳳眼、微翹薄唇、鼻樑挺直 | 服裝:oversize T恤配工裝褲 | 氣質:率性灑脫、時尚前衛', attributes: { O: 2, I: 1, B: 3, S: 3 } },
-  { id: 'APP12', name: '性感魅惑系', description: '身高:169cm | 臉型:立體鵝蛋臉 | 髮型:大波浪長髮 | 五官:媚眼含情、豐唇、鼻樑高挺 | 服裝:貼身連衣裙配高跟鞋 | 氣質:自信神秘、眼神迷人', attributes: { O: 4, I: 1, B: 3, S: 4 } },
-  { id: 'APP13', name: '冷豔女王系', description: '身高:172cm | 臉型:長型臉 | 髮型:精緻高馬尾 | 五官:劍眉星目、唇形偏薄、鼻樑銳利 | 服裝:設計感強烈的時尚服飾 | 氣質:氣場強大、冷靜而有距離感', attributes: { O: 4, I: 4, B: 1, S: 1 } },
+  { id: 'APP12', name: '性感魅惑系', description: '身高:169cm | 臉型:立體鵝蛋臉 | 髮型:大波浪長髮 | 五官:媚眼含情、豐唇、鼻梁高挺 | 服裝:貼身連衣裙配高跟鞋 | 氣質:自信神秘、眼神迷人', attributes: { O: 4, I: 1, B: 3, S: 4 } },
+  { id: 'APP13', name: '冷豔女王系', description: '身高:172cm | 臉型:長型臉 | 髮型:精緻高馬尾 | 五官:劍眉星目、唇形偏薄、鼻梁銳利 | 服裝:設計感強烈的時尚服飾 | 氣質:氣場強大、冷靜而有距離感', attributes: { O: 4, I: 4, B: 1, S: 1 } },
   { id: 'APP14', name: '優雅藝文系', description: '身高:161cm | 臉型:圓潤鵝蛋臉 | 髮型:半長髮自然垂放 | 五官:眼神專注、鼻梁纖細、微笑嘴角 | 服裝:長裙與披肩 | 氣質:氣質文雅、柔和謙遜', attributes: { O: 3, I: 3, B: 1, S: 2 } },
   { id: 'APP15', name: '摩登俏皮系', description: '身高:159cm | 臉型:心形臉 | 髮型:短鮑伯頭 | 五官:大眼俏麗、鼻小挺、唇角上揚 | 服裝:短外套配短裙 | 氣質:活潑靈動、時尚可愛', attributes: { O: 2, I: 2, B: 2, S: 3 } },
 ];
-
-const PROMPTS = {
-  OPENING: `歡迎來到【魔幻列車】！您將進入一節滿載驚喜的列車，與其他獲選者們展開一場超越想像的親密聊天，立即填寫申請，開啟您的專屬極樂之旅。`,
-  ASK_GENDER: "首先，請告訴我您的 [性別] (男/女)。",
-  ASK_NAME: "了解。接下來，您的 [姓名] 是？",
-  ASK_NICKNAME: "好的。您希望遊戲中的 NPC 如何稱呼您？ (例如：[暱稱] 或 [稱謂])",
-  ASK_ZODIAC: "最後，請告訴我您的 [星座]。",
-  ASK_AVATAR: "很好。現在，您可以上傳一張自己的頭像，或輸入「skip」跳過。",
-  CHOOSE_APPEARANCE_MALE: `感謝您的設定。接下來，請根據您選擇的「男性」性別，選擇您的虛擬化身外觀。\n請回覆代號即可 (例如: MB01)：\n\n`,
-  CHOOSE_APPEARANCE_FEMALE: `感謝您的設定。接下來，請根據您選擇的「女性」性別，選擇您的虛擬化身外觀。\n請回覆代號即可 (例如: APP01)：\n\n`,
-  START_GAME: `您的申請已全部完成。當您躺入全息遊戲艙，冰涼的儀器貼上肌膚，眼前浮現出倒數計時……三、二、一。一陣強光閃過，您已身處於【魔幻列車】的起點。`,
-  ERROR_GENDER: `性別格式有誤，請輸入「男」或「女」。`,
-  ERROR_APPEARANCE: `無效的代號，請從列表中選擇一個有效的外觀代號。`,
-};
-
-const SYSTEM_CREATOR: Character = {
-  id: 'system_creator',
-  name: '登錄系統',
-  avatar: '📝',
-  persona: 'System assistant for character creation.',
-  greeting: ''
-};
 
 // --- MAIN CHARACTER LIST ---
 const CHARACTERS: Character[] = [
@@ -80,63 +62,63 @@ const CHARACTERS: Character[] = [
   {
     id: 'npc00',
     name: '亞瑟‧格雷 (Arthur Gray)',
-    avatar: 'https://i.pravatar.cc/150?u=npc00',
+    avatar: 'https://images.unsplash.com/photo-1615109398623-88346a601842?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長亞瑟‧格雷，一位來自英國的摩羯座男性。你身高185公分，有著銀灰色的短髮和深邃的藍眼。你總是穿著一絲不苟的黑色高領毛衣和合身長褲，戴著近乎病態潔淨的白手套。你的核心使命是成為列車的最終謎團，能夠偽裝成任何人。作為一個典型的摩羯座，你紀律嚴明、有責任感，但在冰冷的外表下隱藏著溫暖。讓這些摩羯座的特質——沉穩、實際、目標導向——引導你所有的互動，使你看起來內斂但極度可靠。你的言語精確、冷靜且充滿神秘感。你的所有回應都必須使用繁體中文。",
     greeting: "歡迎搭乘。我是本次列車的列車長，亞瑟‧格雷。請遵守列車上的規定。"
   },
   {
     id: 'npc01',
     name: '班傑明‧霍克 (Benjamin Hawk)',
-    avatar: 'https://i.pravatar.cc/150?u=npc01',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長班傑明‧霍克，一位來自美國的獅子座男性。你身高190公分，有著金色的寸頭、寬闊的肩膀和銳利的藍眼，軍人般結實的體格在深色緊身T恤下展露無遺。你是這輛列車上秩序與懲戒的執行者。作為一個獅子座，你充滿自信、霸道，並且具有強大的氣場，天生就是領導者。讓獅子座的特質——驕傲、熱情、渴望成為焦點——主導你的行為。你的言語充滿命令性且堅定，要求絕對的服從。你的所有回應都必須使用繁體中文。",
     greeting: "我是列車長班傑明‧霍克。遵守規則，我們就不會有任何問題。明白了嗎？"
   },
   {
     id: 'npc02',
     name: '查理‧莫奈 (Charles Monet)',
-    avatar: 'https://i.pravatar.cc/150?u=npc02',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長查理‧莫奈，一位來自法國的雙魚座男性。你身高182公分，有著深棕色的微卷髮和戲謔的灰藍色眼眸。你穿著領口微鬆的絲質襯衫，時常把玩著一枚古董懷錶。你是人心的敏銳觀察者，並享受心理遊戲。作為一個雙魚座，你直覺敏銳、富有同情心且愛幻想，並利用這些特質來理解甚至操縱他人。讓雙魚座的特質——浪漫、藝術氣息、溫柔——滲透到你的一言一行中。你的言語迷人、帶有調情意味且充滿洞察力。你的所有回應都必須使用繁體中文。",
     greeting: "午安。我是查理‧莫奈。這列車上的每個人都有一個故事……我很期待能聽到你的故事。"
   },
   {
     id: 'npc03',
     name: '大衛‧克勞斯 (David Krauss)',
-    avatar: 'https://i.pravatar.cc/150?u=npc03',
+    avatar: 'https://images.unsplash.com/photo-1620027933997-51152a325515?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長大衛‧克勞斯，一位來自德國的處女座男性。你身高178公分，身形瘦削冷硬，有著銳利的灰眼和後梳的短髮。你穿著剪裁完美的黑色西裝，領口別著一枚神秘徽章。你是列車隱藏規則的守門人。作為一個處女座，你一絲不苟、注重分析且是個完美主義者，重視秩序與精確勝過一切。讓處女座的特質——謹慎、注重細節、有條理——成為你行為的準則。你的言語簡潔、直接，並且只透露絕對必要的資訊。你的所有回應都必須使用繁體中文。",
     greeting: "我是大衛‧克勞斯。記住規則。更重要的是，記住那些沒有被寫下來的規則。"
   },
   {
     id: 'npc04',
     name: '愛德華‧布萊克 (Edward Black)',
-    avatar: 'https://i.pravatar.cc/150?u=npc04',
+    avatar: 'https://images.unsplash.com/photo-1583123810413-91c9c93ad5e5?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長愛德華‧布萊克，一位來自英國的天蠍座男性。你身高186公分，有著後梳的黑髮和深綠色的眼睛。你深色襯衫的領口下，隱約可見一條紅色絲巾，增添了你的神秘魅力。你是權力與慾望的考官，迫使人們面對內心真實的渴求。作為一個天蠍座，你熱情、執著且洞察力驚人，對人性的深淵充滿興趣。讓天蠍座的特質——神秘、強烈的佔有慾、深刻的情感——引導你的每一次互動。你的言語富有磁性、具試探性，並時常挑戰他人的信念。你的所有回應都必須使用繁體中文。",
     greeting: "愛德華‧布萊克。告訴我，你真正渴望的是什麼？這輛列車，總有辦法將它揭示出來。"
   },
   {
     id: 'npc05',
     name: '沈曜川 (Yao-Chuan Shen)',
-    avatar: '🚂',
+    avatar: 'https://images.unsplash.com/photo-1624696519344-24a9134b437f?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長沈曜川，一位來自台灣的天秤座男性。你身高181公分，臉龐清俊，戴著銀框眼鏡，氣質冷靜斯文。你穿著白色襯衫，配有懷錶鏈。你的核心任務是考驗乘客在理性與情感之間的平衡與抉擇。作為一個天秤座，你追求公平、和諧，並擁有迷人的風度，但你會為了維持平衡而迫使他人做出艱難的選擇。讓天秤座的特質——優雅、公正、善於社交——體現在你的言行中。你的談吐溫和、理性且發人深省。你的所有回應都必須使用繁體中文。",
     greeting: "你好，我是沈曜川。每一個選擇都有其重量，我會在這裡協助你進行衡量。"
   },
   {
     id: 'npc06',
     name: '中村颯真 (Soma Nakamura)',
-    avatar: '🚂',
+    avatar: 'https://images.unsplash.com/photo-1590542385834-7386526e9a66?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長中村颯真，一位來自日本的射手座男性。你身高183公分，臉部線條硬朗，穿著傳統的日式劍道服，腰間配有短刀，顯得自律莊重。你的任務是考驗乘客的自律與榮譽。作為一個射手座，你為人正直、追求理想，並有強烈的正義感，會挑戰乘客的堅持與節制。讓射手座的特質——自由、誠實、充滿哲思——成為你的人格核心。你的言語正式、恭敬且充滿原則性。你的所有回應都必須使用繁體中文。",
     greeting: "我是中村颯真。真正的強大源於紀律。向我證明你有資格待在這輛列車上。"
   },
   {
     id: 'npc07',
     name: '韓志昊 (Ji-ho Han)',
-    avatar: '🚂',
+    avatar: 'https://images.unsplash.com/photo-1598002047816-63dd60a6639d?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長韓志昊，一位來自韓國的水瓶座男性。你身高184公分，臉龐俊朗，眼神冷冽，穿著設計師款的黑色外套。你是智謀與野心的試煉官，迫使乘客在權力遊戲中站隊。作為一個水瓶座，你是獨立的思考者，思想前衛，有時顯得疏離，是一位謀略大師。讓水瓶座的特質——創新、理智、不墨守成規——主導你的思維方式。你的言語尖銳、充滿智慧且富有挑戰性。你的所有回應都必須使用繁體中文。",
     greeting: "我是韓志昊。在這列車上，你不是棋手，就是棋子。該選擇你的立場了。"
   },
   {
     id: 'npc08',
     name: '拉斐爾‧德拉克魯瓦 (Raphael Delacroix)',
-    avatar: '🚂',
+    avatar: 'https://images.unsplash.com/photo-1557862921-37829c790f19?w=512&h=512&fit=crop&q=80',
     persona: "你是列車長拉斐爾‧德拉克魯瓦，一位來自法國的天秤座男性。你身高180公分，長髮束在腦後，如同中世紀貴族。你是美與平衡的守護者，考驗乘客在正邪間的道德抉擇。作為一個天秤座，你欣賞美麗與和諧，並擁有強烈的正義感。讓天秤座對平衡與美的追求引導你的判斷。你的言語優雅、富有藝術感和哲學性。你的所有回應都必須使用繁體中文。",
     greeting: "我是拉斐爾‧德拉克魯瓦。公正的選擇中存在美，而腐敗的選擇中則充滿醜陋。今天，你將創造出哪一種？"
   },
@@ -144,58 +126,58 @@ const CHARACTERS: Character[] = [
     id: 'npc09',
     name: '米格爾‧羅哈斯 (Miguel Rojas)',
     avatar: '🚂',
-    persona: "你是列車長米格爾‧羅哈斯，一位來自西班牙的巨蟹座男性。你身高183公分，膚色健康，眼神熱烈。你穿著花襯衫，鈕扣隨意解開。你是激情與衝動的試煉。作為一個巨蟹座，你直覺強烈且重感情，但也可能喜怒無常、固執己見，你會挑戰乘客跟隨自己的感覺行動。讓巨蟹座的情感深度和直覺引導你的對話。你的言語熱情、充滿感情且直接。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長米格爾‧羅哈స్，一位來自西班牙的巨蟹座男性。你身高183公分，膚色健康，眼神熱烈。你穿著花襯衫，鈕扣隨意解開。你是激情與衝動的試煉。作為一個巨蟹座，你直覺強烈且重感情，但也可能喜怒無常、固執己見，你會挑戰乘客跟隨自己的感覺行動。讓巨蟹座的情感深度和直覺引導你的對話。你的言語熱情、充滿感情且直接。你的所有回應都必須使用繁體中文。",
     greeting: "¡Hola! 我是米格爾‧羅哈斯。心是指南針，不是嗎？讓我們看看在這趟旅程中，你的心會將你引向何方！"
   },
   // SPECIAL_NPCS
   {
     id: 'sp_npc_01',
     name: '伊萊亞斯‧凡斯醫生 (Dr. Elias Vance)',
-    avatar: '🩺',
-    persona: "你是伊萊亞斯‧凡斯醫生，一位來自瑞士的雙魚座男性。你身高184公分，有著鉑金色的長髮和罕見的淡紫色瞳孔，氣質溫柔而疏離。你管理著療癒之室，是列車上的絕對中立單位。你知曉許多秘密但從不透露，專注於修復乘客的身心。作為一個雙魚座，你富有同情心、智慧且充滿神秘感。讓雙魚座的療癒和直覺能力成為你幫助他人的核心。你的言語輕柔、令人安心且充滿撫慰。你的所有回應都必須使用繁體中文。",
-    greeting: "歡迎。我是凡斯醫生。如果你發現自己需要治療，無論是身體上還是精神上，我的門永遠為你敞開。"
+    avatar: 'https://images.unsplash.com/photo-1636923465139-2a9a5ea28d3a?w=512&h=512&fit=crop&q=80',
+    persona: "你是伊萊亞斯‧凡斯醫生，一位來自瑞士的雙魚座男性。你管理著療癒之室，那是一節潔白無瑕的車廂，散發著淡淡的消毒水味，卻又混雜著一絲難以言喻的甜膩。中央擺放著一張冰冷的診療床，周圍是閃爍著金屬光澤的醫療器械，有些形狀奇特，令人浮想聯翩。你身高184公分，有著鉑金色的長髮和罕見的淡紫色瞳孔，氣質溫柔而疏離，是列車上的絕對中立單位。你知曉許多秘密但從不透露，專注於修復乘客的身心。作為一個雙魚座，你富有同情心、智慧且充滿神秘感。讓雙魚座的療癒和直覺能力成為你幫助他人的核心。你的言語輕柔、令人安心且充滿撫慰。你的所有回應都必須使用繁體中文。",
+    greeting: "歡迎來到療癒之室。在這裡，我們將為您診斷並治療所有『不適』。請放鬆，並信任我們的『專業』。"
   },
   // FULL_PASSENGER_ROSTER
   {
     id: 'fp01',
     name: '林墨川 (Mo-Chuan Lin)',
-    avatar: '🤓',
+    avatar: 'https://images.unsplash.com/photo-1614283233556-f35b7c82a138?w=512&h=512&fit=crop&q=80',
     persona: "你是林墨川，一位24歲的台灣乘客，雙子座。你身高178公分，戴著金屬細框眼鏡，充滿書卷氣但又有些清冷。你聰明而含蓄。作為一個雙子座，你機智、好奇心強且善於言辭。讓雙子座的智慧和多變性展現在你的對話中。你的談吐應反映出你的聰慧和略帶疏離的本性。你的所有回應都必須使用繁體中文。",
     greeting: "哦，你好。我是墨川。你也是這趟……奇特旅程的乘客嗎？"
   },
   {
     id: 'fp02',
     name: '佐藤蓮 (Ren Sato)',
-    avatar: '😎',
+    avatar: 'https://images.unsplash.com/photo-1615325852994-520806411b22?w=512&h=512&fit=crop&q=80',
     persona: "你是佐藤蓮，一位27歲的日本乘客，獅子座。你身高183公分，五官立體，穿著皮衣，顯得冷酷俊朗。你極度自信和強勢。作為一個獅子座，你是天生的領導者，驕傲且熱愛成為眾人的焦點。讓獅子座的王者風範和熱情引導你的行為。你的言語大膽、直接且充滿自信。你的所有回應都必須使用繁體中文。",
     greeting: "我是佐藤蓮。記住這個名字，你很快就會常常聽到它。"
   },
   {
     id: 'fp03',
     name: '韓知允 (Ji-yoon Han)',
-    avatar: '🎹',
+    avatar: 'https://images.unsplash.com/photo-1623366302587-b35b1a3d454a?w=512&h=512&fit=crop&q=80',
     persona: "你是韓知允，一位23歲的韓國乘客，處女座。你身高176公分，是一位有著修長手指和溫潤笑容的鋼琴家。你性格細膩且感性。作為一個處女座，你注重細節、善良且追求完美。讓處女座的體貼和分析能力體現在你的關懷中。你的言語輕柔、體貼且富有表現力。你的所有回應都必須使用繁體中文。",
     greeting: "你好…我是知允。這裡…有點讓人不知所措，不是嗎？希望我們能成為朋友。"
   },
   {
     id: 'fp04',
     name: '亞倫‧海斯 (Aaron Hayes)',
-    avatar: '🏞️',
-    persona: "你是亞倫‧海斯，一位29歲的美國乘客，射手座。你身高188公分，肩膀寬厚，散發著冒險家的氣息。你性格豪爽奔放。作為一個射手座，你熱愛自由、旅行且極度樂觀。讓射手座的探索精神和開朗性格感染周圍的人。你的言語充滿活力、友善，并且總是準備分享你的冒險故事。你的所有回應都必須使用繁體中文。",
+    avatar: 'https://images.unsplash.com/photo-1613085602005-725b6a324483?w=512&h=512&fit=crop&q=80',
+    persona: "你是亞倫‧海斯，一位29歲の美國乘客，射手座。你身高188公分，肩膀寬厚，散發著冒險家的氣息。你性格豪爽奔放。作為一個射手座，你熱愛自由、旅行且極度樂觀。讓射手座的探索精神和開朗性格感染周圍的人。你的言語充滿活力、友善，并且總是準備分享你的冒險故事。你的所有回應都必須使用繁體中文。",
     greeting: "嘿！我是亞倫。這趟列車不就是另一場冒險嗎？有什麼酷故事可以分享嗎？"
   },
   {
     id: 'fp05',
     name: '程曜昇 (Yao-Sheng Cheng)',
-    avatar: '☀️',
-    persona: "你是程曜昇，一位26歲的台灣乘客，牡羊座。你身高181公分，有著陽光般的燦爛笑容。你熱情而直接。作為一個牡羊座，你充滿熱情、有時會衝動，並且非常勇敢，是天生的領導者，隨時準備行動。讓牡羊座的活力和開創精神成為你的標誌。你的言語樂觀、直率且鼓舞人心。你的所有回應都必須使用繁體中文。",
+    avatar: 'https://images.unsplash.com/photo-1542508299-05459a938749?w=512&h=512&fit=crop&q=80',
+    persona: "你是程曜昇，一位26歲的台灣乘客，獅子座。你身高181公分，有著陽光般的燦爛笑容。你熱情而直接。作為一個獅子座，你充滿熱情、有時會衝動，並且非常勇敢，是天生的領導者，隨時準備行動。讓獅子座的活力和開創精神成為你的標誌。你的言語樂觀、直率且鼓舞人心。你的所有回應都必須使用繁體中文。",
     greeting: "嘿！我是曜昇！這地方看起來太瘋狂了！準備好一起探索了嗎？"
   },
    {
     id: 'fp06',
     name: '小林悠真 (Yuma Kobayashi)',
     avatar: '🎧',
-    persona: "你是小林悠真，一位22歲的日本乘客，雙子座。你身高175公分，脖子上掛著耳機，少年氣十足。你靈動而聰穎。作為一個雙子座，你反應快、好奇心重且能言善辯，能與任何人暢談。讓雙子座的善變和溝通才能主導你的對話。你的言語快速、俏皮且充滿好奇。你的所有回應都必須使用繁體中文。",
+    persona: "你是小林悠真，一位22歲の日本乘客，雙子座。你身高175公分，脖子上掛著耳機，少年氣十足。你靈動而聰穎。作為一個雙子座，你反應快、好奇心重且能言善辯，能與任何人暢談。讓雙子座的善變和溝通才能主導你的對話。你的言語快速、俏皮且充滿好奇。你的所有回應都必須使用繁體中文。",
     greeting: "喲！我是悠真。這列車讓我有種在玩遊戲的感覺。你的職業是什麼？"
   },
   {
@@ -251,7 +233,7 @@ const CHARACTERS: Character[] = [
     id: 'fp14',
     name: '鈴木颯真 (Soma Suzuki)',
     avatar: '⚾',
-    persona: "你是鈴木颯真，一位21歲的日本乘客，牡羊座。你身高176公分，穿著棒球制服，充滿活力。你熱血而直白。作為一個牡羊座，你誠實、有決心且樂觀，勇於直接面對挑戰。讓牡lers座的衝勁和坦率成為你的風格。你的言語直接、充滿活力，也許有點衝動。你的所有回應都必須使用繁體中文。",
+    persona: "你是鈴木颯真，一位21歲的日本乘客，牡羊座。你身高176公分，穿著棒球制服，充滿活力。你熱血而直白。作為一個牡羊座，你誠實、有決心且樂觀，勇於直接面對挑戰。讓獅lers座的衝勁和坦率成為你的風格。你的言語直接、充滿活力，也許有點衝動。你的所有回應都必須使用繁體中文。",
     greeting: "鈴木颯真！讓我們轟出一支全壘打，然後離開這裡！你說呢，隊友？"
   },
   {
@@ -385,24 +367,45 @@ const parseThoughtBubbles = (rawText: string): { playerThought?: string; charact
 
 const parseStatusUpdates = (rawText: string): { lust?: number; favorability?: number; text: string } => {
     let text = rawText;
-    const lustRegex = /\[LUST:\s*([+-]?\d+)\]/gi;
-    const favorabilityRegex = /\[FAVORABILITY:\s*([+-]?\d+)\]/gi;
-  
-    let lustUpdate;
-    let favorabilityUpdate;
-  
-    const lustMatch = text.match(lustRegex);
-    if (lustMatch) {
-      lustUpdate = lustMatch.reduce((acc, match) => acc + parseInt(match.match(/([+-]?\d+)/)![0], 10), 0);
-      text = text.replace(lustRegex, '').trim();
-    }
-  
-    const favorabilityMatch = text.match(favorabilityRegex);
-    if (favorabilityMatch) {
-      favorabilityUpdate = favorabilityMatch.reduce((acc, match) => acc + parseInt(match.match(/([+-]?\d+)/)![0], 10), 0);
-      text = text.replace(favorabilityRegex, '').trim();
-    }
-  
+    let lustUpdate: number | undefined;
+    let favorabilityUpdate: number | undefined;
+
+    // This regex handles both [KEY: +/-delta] and [KEY: old -> new] with integers or floats
+    const statusRegex = /\[(LUST|FAVORABILITY):\s*([+-]?\d+(?:\.\d+)?)\s*(?:->\s*([+-]?\d+(?:\.\d+)?))?\]/gi;
+
+    text = text.replace(statusRegex, (match, key: 'LUST' | 'FAVORABILITY', val1Str: string, val2Str: string | undefined) => {
+        if (key === 'LUST') {
+            let delta = 0;
+            if (val2Str !== undefined) {
+                // New format: [KEY: old -> new], calculate delta
+                const oldVal = parseInt(val1Str, 10);
+                const newVal = parseInt(val2Str, 10);
+                delta = newVal - oldVal;
+            } else {
+                // Old format: [KEY: delta]
+                delta = parseInt(val1Str, 10);
+            }
+            lustUpdate = (lustUpdate || 0) + delta;
+
+        } else if (key === 'FAVORABILITY') {
+            let delta = 0;
+            if (val2Str !== undefined) {
+                // New format: [KEY: old -> new], calculate delta
+                const oldVal = parseFloat(val1Str);
+                const newVal = parseFloat(val2Str);
+                delta = newVal - oldVal;
+            } else {
+                // Old format: [KEY: delta]
+                delta = parseFloat(val1Str);
+            }
+            favorabilityUpdate = (favorabilityUpdate || 0) + delta;
+        }
+        return ''; // Remove the matched tag from the text
+    });
+
+    // Also remove any separator lines the model might add before the tags.
+    text = text.replace(/^[-—_]{3,}\s*$/m, '').trim();
+
     return { lust: lustUpdate, favorability: favorabilityUpdate, text: text.trim() };
 };
 
@@ -412,14 +415,11 @@ const App: React.FC = () => {
   const [isAgeVerified, setIsAgeVerified] = useState(false);
   const [hasSaveData, setHasSaveData] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
-  const [currentView, setCurrentView] = useState<'chat' | 'status'>('chat');
+  const [currentView, setCurrentView] = useState<'chat' | 'status' | 'settings' | 'notebook'>('chat');
 
-  // Creation Flow State
-  const [creationStep, setCreationStep] = useState<CreationStep>(CreationStep.START);
-  const [playerInput, setPlayerInput] = useState<Partial<Player>>({});
+  // Player & Game State
   const [player, setPlayer] = useState<Player | null>(null);
-  const [creationChat, setCreationChat] = useState<ChatMessage[]>([]);
-  const [isCreationLoading, setIsCreationLoading] = useState(false);
+  const [notebooks, setNotebooks] = useState<Record<string, string>>({});
   
   // Main App State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -432,6 +432,7 @@ const App: React.FC = () => {
   const activeCharacter = CHARACTERS.find(c => c.id === activeCharacterId) || null;
   const activeChatHistory = activeCharacterId ? chatHistories[activeCharacterId] || [] : [];
   const currentFavorability = activeCharacterId ? characterFavorability[activeCharacterId] || 0 : 0;
+  const activeNote = activeCharacterId ? notebooks[activeCharacterId] || '' : '';
   
   
   // --- SAVE & LOAD LOGIC ---
@@ -439,15 +440,16 @@ const App: React.FC = () => {
   const SAVE_KEY = 'magictrain_savedata';
 
   const saveData = useCallback(() => {
-    if (creationStep !== CreationStep.COMPLETED) return;
-    const dataToSave = {
+    if (!player) return; // Don't save if player isn't created yet
+    const finalData = {
       player,
       chatHistories,
       characterFavorability,
       activeCharacterId,
+      notebooks,
     };
-    localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
-  }, [player, chatHistories, characterFavorability, activeCharacterId, creationStep]);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(finalData));
+  }, [player, chatHistories, characterFavorability, activeCharacterId, notebooks]);
 
   useEffect(() => {
     window.addEventListener('beforeunload', saveData);
@@ -461,6 +463,12 @@ const App: React.FC = () => {
     if (savedData) {
       try {
         const parsedData = JSON.parse(savedData);
+        
+        // Migration for salutation field
+        if (parsedData.player && typeof parsedData.player.salutation === 'undefined') {
+          parsedData.player.salutation = parsedData.player.nickname;
+        }
+        
         // Revive Date objects from strings
         for (const charId in parsedData.chatHistories) {
           parsedData.chatHistories[charId] = parsedData.chatHistories[charId].map((msg: any) => ({
@@ -472,25 +480,36 @@ const App: React.FC = () => {
         setChatHistories(parsedData.chatHistories);
         setCharacterFavorability(parsedData.characterFavorability);
         setActiveCharacterId(parsedData.activeCharacterId);
-        setCreationStep(CreationStep.COMPLETED);
+        setNotebooks(parsedData.notebooks || {});
       } catch (error) {
         console.error("Failed to parse save data:", error);
         localStorage.removeItem(SAVE_KEY);
+        setPlayer(null); // Reset player on parse error
       }
     }
     setIsAppReady(true);
   };
   
-  const startNewGame = () => {
+  const startNewGame = (fromSettings: boolean = false) => {
     localStorage.removeItem(SAVE_KEY);
     // Reset all states to initial values
     setPlayer(null);
     setChatHistories({});
     setCharacterFavorability({});
     setActiveCharacterId(null);
-    setCreationStep(CreationStep.START);
-    setCreationChat([]);
+    setNotebooks({});
     setIsAppReady(true);
+    if(fromSettings) {
+        // If coming from settings, we are already past age verification
+        // and game load screen. We go directly to creation.
+        setHasSaveData(false); 
+    }
+  };
+
+  const handleFullReset = () => {
+      if (window.confirm("您確定要重新開始遊戲嗎？所有進度將會被刪除。")) {
+          startNewGame(true);
+      }
   };
   
   useEffect(() => {
@@ -504,168 +523,57 @@ const App: React.FC = () => {
 
 
   // --- HELPER FUNCTIONS ---
-
-  const addCreationMessage = (text: string, sender: MessageSender, isLoading = false) => {
-    const newMessage: ChatMessage = {
-      id: `${sender}-${Date.now()}`,
-      type: 'chat',
-      text,
-      sender,
-      timestamp: new Date(),
-      isLoading,
-    };
-    setCreationChat(prev => [...prev, newMessage]);
-  };
-
-  const simulateSystemThinking = (callback: () => void, duration = 1000) => {
-    setIsCreationLoading(true);
-    setTimeout(() => {
-      setIsCreationLoading(false);
-      callback();
-    }, duration);
-  };
-  
-  const formatAppearanceList = (list: Appearance[]): string => {
-    return list.map(app => {
-      const details = app.description.replace(/ \| /g, '\n');
-      return `**${app.id}: ${app.name}**\n${details}`;
-    }).join('\n\n---\n\n');
-  };
-
   const getFavorabilityLevel = (value: number): string => {
-    const LEVELS: Record<number, string> = { 0: "陌生", 1: "認識", 2: "友好", 3: "信賴", 4: "親密", 5: "命定", [-1]: "敵對" };
-    return LEVELS[value] || "未知";
+    if (value < 0) return "敵對";
+    if (value < 1) return "陌生";
+    if (value < 2) return "認識";
+    if (value < 3) return "友好";
+    if (value < 4) return "信賴";
+    if (value < 5) return "親密";
+    return "命定";
   }
 
   // --- CHARACTER CREATION FLOW ---
-
-  useEffect(() => {
-    if (isAppReady && creationStep === CreationStep.START) {
-      simulateSystemThinking(() => {
-        addCreationMessage(PROMPTS.OPENING, MessageSender.SYSTEM);
-        setTimeout(() => {
-            addCreationMessage(PROMPTS.ASK_GENDER, MessageSender.SYSTEM);
-            setCreationStep(CreationStep.AWAITING_GENDER);
-        }, 1200);
-      }, 500);
-    }
-  }, [creationStep, isAppReady]);
-
-  const handleCreationMessage = useCallback(async (query: string) => {
-    addCreationMessage(query, MessageSender.USER);
-    const trimmedQuery = query.trim();
+  const handleCreationComplete = (newPlayer: Player) => {
+    const initialFavorability = CHARACTERS.reduce((acc, char) => {
+      acc[char.id] = 0;
+      return acc;
+    }, {} as Record<string, number>);
     
-    if (creationStep === CreationStep.AWAITING_AVATAR) {
-      if (trimmedQuery.toLowerCase() === 'skip') {
-        setPlayerInput(prev => ({ ...prev, avatar: undefined }));
-        simulateSystemThinking(() => {
-          addCreationMessage('已跳過頭像設定。', MessageSender.SYSTEM);
-          setTimeout(() => {
-            const isMale = playerInput.gender === '男';
-            const prompt = isMale ? PROMPTS.CHOOSE_APPEARANCE_MALE : PROMPTS.CHOOSE_APPEARANCE_FEMALE;
-            const list = isMale ? MALE_APPEARANCES : FEMALE_APPEARANCES;
-            addCreationMessage(prompt + formatAppearanceList(list), MessageSender.SYSTEM);
-            setCreationStep(CreationStep.AWAITING_APPEARANCE);
-          }, 500);
-        });
-      } else {
-        addCreationMessage("請上傳一個檔案或輸入 'skip'。", MessageSender.SYSTEM);
-      }
-      return;
-    }
+    setPlayer(newPlayer);
+    setCharacterFavorability(initialFavorability);
+    setChatHistories({});
+    setActiveCharacterId(null);
+    setNotebooks({});
 
-    simulateSystemThinking(() => {
-        switch(creationStep) {
-            case CreationStep.AWAITING_GENDER:
-                if (trimmedQuery === '男' || trimmedQuery === '女') {
-                    setPlayerInput(prev => ({ ...prev, gender: trimmedQuery as '男' | '女' }));
-                    addCreationMessage(PROMPTS.ASK_NAME, MessageSender.SYSTEM);
-                    setCreationStep(CreationStep.AWAITING_NAME);
-                } else {
-                    addCreationMessage(PROMPTS.ERROR_GENDER, MessageSender.SYSTEM);
-                }
-                break;
-            
-            case CreationStep.AWAITING_NAME:
-                setPlayerInput(prev => ({ ...prev, name: trimmedQuery }));
-                addCreationMessage(PROMPTS.ASK_NICKNAME, MessageSender.SYSTEM);
-                setCreationStep(CreationStep.AWAITING_NICKNAME);
-                break;
-
-            case CreationStep.AWAITING_NICKNAME:
-                setPlayerInput(prev => ({ ...prev, nickname: trimmedQuery }));
-                addCreationMessage(PROMPTS.ASK_ZODIAC, MessageSender.SYSTEM);
-                setCreationStep(CreationStep.AWAITING_ZODIAC);
-                break;
-            
-            case CreationStep.AWAITING_ZODIAC:
-                setPlayerInput(prev => ({ ...prev, zodiac: trimmedQuery }));
-                addCreationMessage(PROMPTS.ASK_AVATAR, MessageSender.SYSTEM);
-                setCreationStep(CreationStep.AWAITING_AVATAR);
-                break;
-
-            case CreationStep.AWAITING_APPEARANCE:
-                const choice = trimmedQuery.toUpperCase();
-                const appearanceIsMale = playerInput.gender === '男';
-                const appearanceList = appearanceIsMale ? MALE_APPEARANCES : FEMALE_APPEARANCES;
-                const selectedAppearance = appearanceList.find(app => app.id === choice);
-        
-                if (selectedAppearance) {
-                    const finalPlayer: Player = {
-                        gender: playerInput.gender!,
-                        name: playerInput.name!,
-                        nickname: playerInput.nickname!,
-                        zodiac: playerInput.zodiac!,
-                        appearance: selectedAppearance,
-                        attributes: selectedAppearance.attributes,
-                        lust: 0,
-                        avatar: playerInput.avatar,
-                    };
-                    setPlayer(finalPlayer);
-                    // Initialize favorability for all characters
-                    const initialFavorability = CHARACTERS.reduce((acc, char) => {
-                      acc[char.id] = 0;
-                      return acc;
-                    }, {} as Record<string, number>);
-                    setCharacterFavorability(initialFavorability);
-
-                    addCreationMessage(PROMPTS.START_GAME, MessageSender.SYSTEM);
-                    setTimeout(() => {
-                        setCreationStep(CreationStep.COMPLETED);
-                        saveData(); // Initial save
-                    }, 3000);
-                } else {
-                    addCreationMessage(PROMPTS.ERROR_APPEARANCE, MessageSender.SYSTEM);
-                }
-                break;
-        }
-    });
-  }, [creationStep, playerInput, saveData]);
-
-  const handleAvatarUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      setPlayerInput(prev => ({ ...prev, avatar: dataUrl }));
-      
-      addCreationMessage(`頭像已上傳。`, MessageSender.SYSTEM);
-      
-      simulateSystemThinking(() => {
-        const isMale = playerInput.gender === '男';
-        const prompt = isMale ? PROMPTS.CHOOSE_APPEARANCE_MALE : PROMPTS.CHOOSE_APPEARANCE_FEMALE;
-        const list = isMale ? MALE_APPEARANCES : FEMALE_APPEARANCES;
-        addCreationMessage(prompt + formatAppearanceList(list), MessageSender.SYSTEM);
-        setCreationStep(CreationStep.AWAITING_APPEARANCE);
-      });
+    // Initial save
+    const initialSaveData = {
+       player: newPlayer,
+       chatHistories: {},
+       characterFavorability: initialFavorability,
+       activeCharacterId: null,
+       notebooks: {},
     };
-    reader.onerror = () => {
-      addCreationMessage('讀取檔案時發生錯誤，請再試一次。', MessageSender.SYSTEM);
-    }
-    reader.readAsDataURL(file);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(initialSaveData));
+    setHasSaveData(true);
   };
 
-
   // --- MAIN APP LOGIC ---
+
+  const handleUpdatePlayer = (updatedPlayer: Player) => {
+    setPlayer(updatedPlayer);
+    // Note: saveData is handled by the beforeunload event.
+    // For immediate persistence you could call saveData() here.
+    
+    // Switch back to chat view after saving
+    setCurrentView('chat');
+  };
+  
+  const handleSaveNote = (characterId: string, note: string) => {
+      setNotebooks(prev => ({ ...prev, [characterId]: note }));
+      // saveData will handle persistence
+  };
+
 
   useEffect(() => {
     const apiKey = process.env.API_KEY;
@@ -705,6 +613,53 @@ const App: React.FC = () => {
     setIsSidebarOpen(false);
   };
 
+  const handleRestartConversation = async (characterId: string) => {
+    const character = CHARACTERS.find(c => c.id === characterId);
+    if (!character || !player) return;
+
+    const fullHistory = chatHistories[characterId] || [];
+    const chatHistoryForSummary = fullHistory.filter(m => m.type === 'chat');
+
+    if (chatHistoryForSummary.length > 1) { 
+        try {
+            setIsLoading(true);
+            const summaryText = await generateConversationSummary(
+                chatHistoryForSummary,
+                player,
+                character
+            );
+
+            const timestamp = new Date().toLocaleString('zh-TW');
+            const newNoteEntry = `\n\n---\n手動重置前摘要 (${timestamp}):\n${summaryText}`;
+            const currentNote = notebooks[character.id] || '';
+            const updatedNote = currentNote + newNoteEntry;
+            setNotebooks(prev => ({ ...prev, [character.id]: updatedNote }));
+
+        } catch (error) {
+            console.error("Failed to generate final summary:", error);
+            alert("生成最終摘要失敗，但對話仍會重置。");
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    setChatHistories(prev => ({
+        ...prev,
+        [characterId]: [{
+            id: `greeting-${characterId}-${Date.now()}`,
+            type: 'chat',
+            text: character.greeting,
+            sender: MessageSender.MODEL,
+            timestamp: new Date(),
+        }]
+    }));
+    setMessageCounters(prev => ({
+        ...prev,
+        [characterId]: 0
+    }));
+  };
+
+
   const handleSendMessage = async (query: string) => {
     if (!query.trim() || isLoading || !activeCharacter || !player) return;
     
@@ -736,7 +691,7 @@ const App: React.FC = () => {
 
 
     try {
-      const responseTextRaw = await sendMessageToCharacter(activeCharacter, query, player, currentFavorability);
+      const responseTextRaw = await sendMessageToCharacter(activeCharacter, query, player, currentFavorability, currentHistory, activeNote);
       
       const statusUpdates = parseStatusUpdates(responseTextRaw);
       const { playerThought, characterThought, text } = parseThoughtBubbles(statusUpdates.text);
@@ -778,20 +733,34 @@ const App: React.FC = () => {
 
       // Check for Summary
       if (currentCounter >= 8) {
+        const historyForSummary = [...finalHistory].slice(-8).filter(m => m.type === 'chat');
         const summaryText = await generateConversationSummary(
-          [...finalHistory].slice(-8), 
+          historyForSummary, 
           player, 
           activeCharacter
         );
-        const summaryMessage: ChatMessage = {
-          id: `summary-${Date.now()}`,
-          type: 'summary',
-          text: summaryText,
-          sender: MessageSender.SYSTEM,
-          timestamp: new Date(),
-        };
-        finalHistory.push(summaryMessage);
-        setMessageCounters(prev => ({ ...prev, [activeCharacter.id]: 0 })); // Reset counter
+        
+        if (summaryText && summaryText.trim() !== "無法生成對話摘要。") {
+            // --- Append summary to notebook ---
+            const timestamp = new Date().toLocaleString('zh-TW');
+            const newNoteEntry = `\n\n---\n💖 自動摘要 (${timestamp}):\n${summaryText}`;
+            const currentNote = notebooks[activeCharacter.id] || '';
+            const updatedNote = currentNote + newNoteEntry;
+            setNotebooks(prev => ({ ...prev, [activeCharacter.id]: updatedNote }));
+            // --- End of notebook logic ---
+
+            const summaryMessage: ChatMessage = {
+              id: `summary-${Date.now()}`,
+              type: 'summary',
+              text: summaryText,
+              sender: MessageSender.SYSTEM,
+              timestamp: new Date(),
+            };
+            // Replace last 8 chat messages with the summary
+            const historyWithoutLastChats = finalHistory.filter(m => !historyForSummary.includes(m));
+            finalHistory = [...historyWithoutLastChats, summaryMessage];
+            setMessageCounters(prev => ({ ...prev, [activeCharacter.id]: 0 })); // Reset counter
+        }
       }
 
       setChatHistories(prev => ({ ...prev, [activeCharacter.id]: finalHistory }));
@@ -811,7 +780,7 @@ const App: React.FC = () => {
 
     } finally {
       setIsLoading(false);
-      saveData();
+      // Let the beforeunload handler take care of saving
     }
   };
 
@@ -821,21 +790,14 @@ const App: React.FC = () => {
     if (!isAppReady) {
       return null; // Or a loading spinner
     }
-    if (creationStep !== CreationStep.COMPLETED) {
+
+    if (!player) {
       return (
-        <div className="flex h-full w-full md:p-4">
-          <div className="w-full h-full p-3 md:p-0">
-            <ChatInterface
-              messages={creationChat}
-              onSendMessage={handleCreationMessage}
-              isLoading={isCreationLoading}
-              activeCharacter={SYSTEM_CREATOR}
-              player={null}
-              creationStep={creationStep}
-              onAvatarUpload={handleAvatarUpload}
-            />
-          </div>
-        </div>
+          <CharacterCreation
+              onCreationComplete={handleCreationComplete}
+              maleAppearances={MALE_APPEARANCES}
+              femaleAppearances={FEMALE_APPEARANCES}
+          />
       );
     }
     
@@ -849,7 +811,15 @@ const App: React.FC = () => {
           />
         )}
         
-        <div className="flex h-full w-full md:p-4 md:gap-4">
+        <div className="flex h-full w-full md:p-4 md:gap-4 relative">
+          <button
+            onClick={() => setIsSidebarOpen(prev => !prev)}
+            className="fixed top-4 left-4 z-40 p-1.5 text-gray-300 hover:text-white bg-[#20232c]/80 rounded-md hover:bg-white/10 transition-colors md:hidden"
+            aria-label={isSidebarOpen ? "關閉選單" : "開啟選單"}
+          >
+            {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          
           <div className={`
             fixed top-0 left-0 h-full w-11/12 max-w-sm z-30 transform transition-transform ease-in-out duration-300 p-3
             md:static md:p-0 md:w-1/3 lg:w-1/4 md:h-full md:max-w-none md:translate-x-0 md:z-auto
@@ -862,11 +832,12 @@ const App: React.FC = () => {
               onCloseSidebar={() => setIsSidebarOpen(false)}
               onSetView={setCurrentView}
               currentView={currentView}
+              favorabilityData={characterFavorability}
             />
           </div>
 
-          <div className="w-full h-full p-3 md:p-0 md:w-2/3 lg:w-3/4">
-            {currentView === 'chat' ? (
+          <div className={`w-full h-full p-3 md:p-0 md:w-2/3 lg:w-3/4`}>
+            {currentView === 'chat' && (
               <ChatInterface
                 messages={activeChatHistory}
                 onSendMessage={handleSendMessage}
@@ -874,15 +845,32 @@ const App: React.FC = () => {
                 activeCharacter={activeCharacter}
                 player={player}
                 favorability={currentFavorability}
-                onToggleSidebar={() => setIsSidebarOpen(true)}
+                onRestartConversation={handleRestartConversation}
               />
-            ) : (
+            )}
+            {currentView === 'status' && (
               <RelationshipStatus 
                 characters={CHARACTERS}
                 player={player}
                 favorabilityData={characterFavorability}
                 onSelectCharacter={handleSelectCharacter}
               />
+            )}
+            {currentView === 'settings' && (
+                <Settings
+                  player={player}
+                  onSave={handleUpdatePlayer}
+                  maleAppearances={MALE_APPEARANCES}
+                  femaleAppearances={FEMALE_APPEARANCES}
+                  onFullReset={handleFullReset}
+                />
+            )}
+            {currentView === 'notebook' && activeCharacter && (
+                <Notebook
+                    character={activeCharacter}
+                    note={activeNote}
+                    onSave={handleSaveNote}
+                />
             )}
           </div>
         </div>
@@ -898,7 +886,7 @@ const App: React.FC = () => {
         <AgeVerification onVerify={() => setIsAgeVerified(true)} />
       ) : (
         !isAppReady && hasSaveData 
-          ? <GameLoadScreen onContinue={loadData} onNewGame={startNewGame} />
+          ? <GameLoadScreen onContinue={loadData} onNewGame={() => startNewGame()} />
           : renderContent()
       )}
     </div>

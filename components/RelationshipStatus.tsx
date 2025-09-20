@@ -7,14 +7,14 @@ import React from 'react';
 import { Character, Player } from '../types';
 import { Heart } from 'lucide-react';
 
-const FAVORABILITY_LEVELS: Record<number, string> = {
-  "0": "陌生",
-  "1": "認識",
-  "2": "友好",
-  "3": "信賴",
-  "4": "親密",
-  "5": "命定",
-  "-1": "敵對",
+const getFavorabilityLevelString = (value: number): string => {
+  if (value < 0) return "敵對";
+  if (value < 1) return "陌生";
+  if (value < 2) return "認識";
+  if (value < 3) return "友好";
+  if (value < 4) return "信賴";
+  if (value < 5) return "親密";
+  return "命定";
 };
 
 interface RelationshipStatusProps {
@@ -36,7 +36,7 @@ const RelationshipStatus: React.FC<RelationshipStatusProps> = ({ characters, pla
             .filter(c => c.id !== 'system_creator')
             .map(char => {
             const favorability = favorabilityData[char.id] || 0;
-            const level = FAVORABILITY_LEVELS[favorability];
+            const level = getFavorabilityLevelString(favorability);
             return (
               <div 
                 key={char.id}

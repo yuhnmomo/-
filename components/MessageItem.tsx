@@ -23,6 +23,20 @@ interface MessageItemProps {
   player?: Player | null;
 }
 
+const getCharacterGender = (character: Character | null | undefined): '男' | '女' | 'unknown' => {
+  if (!character || !character.persona) {
+    return 'unknown';
+  }
+  if (character.persona.includes('男性')) {
+    return '男';
+  }
+  if (character.persona.includes('女性')) {
+    return '女';
+  }
+  return 'unknown';
+};
+
+
 const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?: Player | null }> = ({ sender, avatar, player }) => {
   // Case 1: Player has an uploaded avatar
   if (sender === MessageSender.USER && player?.avatar) {
@@ -85,7 +99,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
   if (message.type === 'summary' || message.type === 'milestone') {
       const isSummary = message.type === 'summary';
       const bgColor = isSummary ? 'bg-[#C9CBE0]/10 border-[#C9CBE0]/30' : 'bg-[#ECD4D4]/10 border-[#ECD4D4]/30';
-      const icon = isSummary ? '🧠' : '💞';
+      const icon = isSummary ? '💖' : '💞';
       const textColor = isSummary ? 'text-[#C9CBE0]' : 'text-[#ECD4D4]';
 
       return (
@@ -101,29 +115,45 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
 
   const isUser = message.sender === MessageSender.USER;
   const isModel = message.sender === MessageSender.MODEL;
-  const isSystem = message.sender === MessageSender.SYSTEM;
+
+  let bubbleClasses = "p-3 rounded-lg shadow w-full "; 
+  let textColorClass = 'text-gray-100';
+
+  if (isUser && player) {
+    if (player.gender === '男') {
+      bubbleClasses += 'bg-blue-700';
+      textColorClass = 'text-blue-200';
+    } else {
+      bubbleClasses += 'bg-purple-700';
+      textColorClass = 'text-purple-200';
+    }
+  } else if (isModel && character) {
+    const gender = getCharacterGender(character);
+    if (gender === '男') {
+      bubbleClasses += 'bg-blue-800';
+      textColorClass = 'text-blue-200';
+    } else if (gender === '女') {
+      bubbleClasses += 'bg-purple-800';
+      textColorClass = 'text-purple-200';
+    } else {
+      bubbleClasses += 'bg-gray-700';
+      textColorClass = 'text-gray-200';
+    }
+  } else { // System message
+    bubbleClasses += "bg-[#C9CBE0]";
+    textColorClass = 'text-[#1a1c23]';
+  }
 
   const renderMessageContent = () => {
     if (isModel && !message.isLoading) {
-      const proseClasses = "prose prose-sm prose-invert w-full min-w-0"; 
+      const proseClasses = `prose prose-sm prose-invert w-full min-w-0 ${textColorClass}`;
       const rawMarkup = marked.parse(message.text || "") as string;
       return <div className={proseClasses} dangerouslySetInnerHTML={{ __html: rawMarkup }} />;
     }
     
-    let textColorClass = isUser || isModel || isSystem ? 'text-[#1a1c23]' : 'text-[#EFEFF1]';
     return <div className={`whitespace-pre-wrap text-sm ${textColorClass}`}>{message.text}</div>;
   };
   
-  let bubbleClasses = "p-3 rounded-lg shadow w-full "; 
-
-  if (isUser) {
-    bubbleClasses += "bg-[#ECD4D4]";
-  } else if (isModel) {
-    bubbleClasses += `bg-[#CCDBE2]`;
-  } else { // System message
-    bubbleClasses += "bg-[#C9CBE0]";
-  }
-
   const bubble = (
     <div className={bubbleClasses}>
       {message.isLoading ? (
