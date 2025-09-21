@@ -50,148 +50,106 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
   // Case 2: Model has an image URL avatar (change to square)
   if (sender === MessageSender.MODEL && avatar?.startsWith('http')) {
     return (
-      <div className="w-10 h-10 rounded-lg bg-stone-200 flex-shrink-0 overflow-hidden shadow-md border-2 border-white/80">
-        <img src={avatar} alt="character avatar" className="w-full h-full object-cover" />
+      <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden shadow-md border-2 border-white/80">
+        <img src={avatar} alt="Character Avatar" className="w-full h-full object-cover" />
       </div>
     );
   }
 
-  // Case 3: Text or Emoji Avatars
-  let avatarContent: string | JSX.Element = '';
-  let bgColorClass = '';
-  let textColorClass = 'text-stone-800';
-  let fontSizeClass = '';
-  let shapeClass = 'rounded-full'; // Default to round
-
-  switch (sender) {
-    case MessageSender.USER:
-      avatarContent = player?.nickname || 'U';
-      bgColorClass = 'bg-[#FFD0A6]';
-      // Use smaller font for full name to fit in the circle.
-      fontSizeClass = 'text-sm font-semibold';
-      shapeClass = 'rounded-full';
-      break;
-    case MessageSender.MODEL:
-      avatarContent = avatar || 'AI';
-      bgColorClass = 'bg-stone-200';
-      fontSizeClass = 'text-base font-semibold';
-      shapeClass = 'rounded-lg';
-      break;
-    case MessageSender.SYSTEM:
-    default:
-      avatarContent = 'S';
-      bgColorClass = 'bg-stone-300';
-      fontSizeClass = 'text-base font-semibold';
-      shapeClass = 'rounded-full';
-      break;
-  }
-  
-  const isEmoji = typeof avatarContent === 'string' && /\p{Emoji}/u.test(avatarContent);
-  if (isEmoji) {
-    fontSizeClass = 'text-2xl';
-    bgColorClass = 'bg-transparent';
-  }
-  
-  const extraStyles = sender === MessageSender.MODEL && !isEmoji ? 'shadow-md border-2 border-white/80' : '';
-
+  // Case 3: Fallback to emoji or initials (model square, user round)
+  const isUser = sender === MessageSender.USER;
+  const initial = isUser ? (player?.nickname?.[0] || 'You') : (avatar?.[0] || '?');
+  const bgColor = isUser ? 'bg-orange-300' : 'bg-stone-300';
+  const shapeClass = isUser ? 'rounded-full' : 'rounded-lg';
 
   return (
-    <div className={`w-10 h-10 ${shapeClass} ${bgColorClass} ${textColorClass} flex items-center justify-center text-center ${fontSizeClass} flex-shrink-0 p-0.5 ${extraStyles}`}>
-      {avatarContent}
+    <div className={`w-10 h-10 ${bgColor} ${shapeClass} flex items-center justify-center text-white font-bold flex-shrink-0 text-2xl`}>
+      {initial}
     </div>
   );
 };
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, character, player }) => {
-  if (message.type === 'summary' || message.type === 'milestone') {
-      const isSummary = message.type === 'summary';
-      const bgColor = isSummary ? 'bg-[#FFCEC7]/50 border-[#FFCEC7]' : 'bg-[#FFD0A6]/50 border-[#FFD0A6]';
-      const icon = isSummary ? '💖' : '💞';
-      const textColor = isSummary ? 'text-[#b17887]' : 'text-[#cc8b5a]';
 
-      return (
-          <div className={`my-4 text-center text-sm ${textColor}`}>
-              <div className={`inline-block p-2 px-4 rounded-full border ${bgColor}`}>
-                  <span className="mr-2">{icon}</span>
-                  {message.text}
-              </div>
-          </div>
-      );
+const MessageItem: React.FC<MessageItemProps> = ({ message, character, player }) => {
+
+  const renderThoughtBubble = (thought: string, ownerName: string, type: 'player' | 'character') => {
+    const title = `💭 ${ownerName}的內心彈幕：`;
+    const bgColor = type === 'player' ? 'bg-[#FFCEC7]/40' : 'bg-[#FFD0A6]/40';
+    const borderColor = type === 'player' ? 'border-[#FFCEC7]' : 'border-[#FFD0A6]';
+
+    return (
+      <div className={`mt-2 mb-1 p-3 rounded-lg text-sm italic ${bgColor} border-l-4 ${borderColor}`}>
+        <p className="font-semibold text-stone-600">{title}</p>
+        <p className="text-stone-700">{thought}</p>
+      </div>
+    );
+  };
+  
+  const createMarkup = (text: string) => {
+    // Sanitize to prevent XSS. In a real app, use a more robust library like DOMPurify.
+    const sanitizedHtml = marked.parse(text, { breaks: true, gfm: true }) as string;
+    return { __html: sanitizedHtml };
+  };
+
+  if (message.type === 'milestone') {
+    return (
+      <div className="my-4 flex items-center justify-center gap-3 text-sm text-center">
+        <div className="w-8 h-px bg-gradient-to-l from-[#E098AE] to-transparent"></div>
+        <p className="text-[#E098AE] font-semibold px-2 py-1 bg-[#E098AE]/10 rounded-md">
+          {message.text}
+        </p>
+        <div className="w-8 h-px bg-gradient-to-r from-[#E098AE] to-transparent"></div>
+      </div>
+    );
   }
 
+  if (message.type === 'summary') {
+    return (
+      <div className="my-4 p-4 rounded-lg bg-[#FFD0A6]/30 border border-[#FFD0A6]/50 text-stone-700 text-sm italic">
+        <h4 className="font-semibold text-stone-800 mb-1">💖 自動摘要</h4>
+        <p>{message.text}</p>
+      </div>
+    );
+  }
 
   const isUser = message.sender === MessageSender.USER;
   const isModel = message.sender === MessageSender.MODEL;
 
-  let bubbleClasses = "p-3 rounded-lg shadow w-full "; 
-  let textColorClass = 'text-stone-800';
-
-  if (isUser) {
-    bubbleClasses += 'bg-[#E098AE]';
-    textColorClass = 'text-white';
-  } else if (isModel) {
-    bubbleClasses += 'bg-white';
-    textColorClass = 'text-stone-800';
-  } else { // System message
-    bubbleClasses += "bg-yellow-200";
-    textColorClass = 'text-yellow-900';
-  }
-
-  const renderMessageContent = () => {
-    if (isModel && !message.isLoading) {
-      const proseClasses = `prose prose-base w-full min-w-0 ${textColorClass}`;
-      const rawMarkup = marked.parse(message.text || "") as string;
-      return <div className={proseClasses} dangerouslySetInnerHTML={{ __html: rawMarkup }} />;
-    }
-    
-    return <div className={`whitespace-pre-wrap text-base ${textColorClass}`}>{message.text}</div>;
-  };
-  
-  const bubble = (
-    <div className={bubbleClasses}>
-      {message.isLoading ? (
-        <div className="flex items-center space-x-1.5">
-          <div className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce"></div>
-        </div>
-      ) : (
-        renderMessageContent()
-      )}
-    </div>
-  );
-
-  const senderName = isUser 
-    ? player?.name 
-    : (isModel ? character?.name.split(' (')[0] : null);
+  const bubbleAlignment = isUser ? 'justify-end' : 'justify-start';
+  const bubbleOrder = isUser ? 'flex-row-reverse' : 'flex-row';
+  const bubbleColor = isUser ? 'bg-[#E098AE] text-white' : 'bg-white/80 text-stone-900';
+  const bubbleShape = isUser ? 'rounded-br-none' : 'rounded-bl-none';
+  const playerName = player?.name || 'Player';
+  const characterName = character?.name.split(' (')[0] || 'Character';
 
   return (
-    <div className={`flex items-start gap-3 mb-4 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />
-      <div className={`flex flex-col w-full max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
-        {senderName && <p className="text-sm text-stone-500 mb-1 px-1">{senderName}</p>}
+    <div className={`my-4 flex ${bubbleAlignment} gap-3`}>
+      {isModel && (
+        <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />
+      )}
+      <div className={`max-w-xl ${isUser ? 'ml-12' : 'mr-12'}`}>
         
-        {isModel && message.playerThought && message.characterThought && player && character ? (
-          <div className="w-full">
-            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-[#FFCEC7]/30 border border-[#FFCEC7]/80 text-sm text-stone-700">
-              <p className="font-semibold text-xs text-stone-500 mb-2 uppercase tracking-wider">
-                  {character.name.split(' (')[0]} 的內心觀察
-              </p>
-              <p className="mb-1 italic">
-                  <span className="font-semibold text-stone-600 not-italic">（對你的猜想）：</span>
-                  {message.playerThought}
-              </p>
-              <p className="italic">
-                  <span className="font-semibold text-stone-600 not-italic">（自己的想法）：</span>
-                  {message.characterThought}
-              </p>
+        {isModel && message.playerThought && renderThoughtBubble(message.playerThought, playerName, 'player')}
+        {isModel && message.characterThought && renderThoughtBubble(message.characterThought, characterName, 'character')}
+
+        <div className={`px-4 py-2.5 rounded-2xl ${bubbleColor} ${bubbleShape} shadow-sm`}>
+          {message.isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="w-2 h-2 bg-current rounded-full animate-bounce"></div>
             </div>
-            {bubble}
-          </div>
-        ) : (
-          bubble
-        )}
+          ) : (
+            <div
+              className="prose prose-sm prose-stone max-w-none prose-p:my-1 prose-headings:my-2"
+              dangerouslySetInnerHTML={createMarkup(message.text)}
+            />
+          )}
+        </div>
       </div>
+       {isUser && (
+        <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />
+      )}
     </div>
   );
 };

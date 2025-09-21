@@ -6,7 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Character, MessageSender, Player } from '../types'; 
 import MessageItem from './MessageItem';
-import { Send, Users, RefreshCw, BookUser, Smile } from 'lucide-react';
+import { Send, Users, RefreshCw, BookUser, Smile, Menu } from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -16,6 +16,7 @@ interface ChatInterfaceProps {
   player: Player | null;
   favorability?: number;
   onRestartConversation: (characterId: string) => void;
+  onOpenSidebar: () => void;
   onSetView: (view: 'chat' | 'settings' | 'notebook') => void;
 }
 
@@ -37,6 +38,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   player,
   favorability = 0,
   onRestartConversation,
+  onOpenSidebar,
   onSetView,
 }) => {
   const [userQuery, setUserQuery] = useState('');
@@ -98,9 +100,16 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     <div className="flex flex-col h-full bg-[#FCE9DA]/80 backdrop-blur-sm rounded-xl shadow-md border border-[#FFCEC7]/50">
       <div className="p-4 border-b border-[#FFCEC7]/50 flex justify-between items-center flex-shrink-0">
         <div className="flex items-center gap-3">
+          <button
+              onClick={onOpenSidebar}
+              className="p-2 bg-[#FCE9DA]/80 backdrop-blur-sm rounded-md text-stone-700 hover:bg-[#FFCEC7] transition-colors"
+              aria-label="開啟角色列表"
+          >
+              <Menu size={20} />
+          </button>
           {activeCharacter ? (
             <>
-              <div className="w-16 h-16 rounded-lg bg-stone-200 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden ml-32 shadow-md border-2 border-white/80">
+              <div className="w-16 h-16 rounded-lg bg-stone-200 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden shadow-md border-2 border-white/80">
                 {activeCharacter.avatar.startsWith('http') ? (
                   <img src={activeCharacter.avatar} alt={activeCharacter.name} className="w-full h-full object-cover" />
                 ) : (
@@ -137,7 +146,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               </div>
             </>
           ) : (
-             <h2 className="text-xl font-semibold text-stone-800 ml-32">魔幻列車聊天室</h2>
+             <h2 className="text-xl font-semibold text-stone-800">魔幻列車聊天室</h2>
           )}
         </div>
       </div>

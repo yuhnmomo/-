@@ -4,7 +4,7 @@
 */
 
 import React from 'react';
-import { X, Heart } from 'lucide-react';
+import { Menu, Heart, Settings as SettingsIcon } from 'lucide-react';
 import { Character } from '../types';
 
 interface CharacterSelectorProps {
@@ -12,6 +12,7 @@ interface CharacterSelectorProps {
   activeCharacterId: string | null;
   onSelectCharacter: (id: string) => void;
   onCloseSidebar?: () => void;
+  onShowSettings?: () => void;
   currentView: 'chat' | 'status' | 'settings' | 'notebook';
   favorabilityData: Record<string, number>;
 }
@@ -31,6 +32,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   activeCharacterId,
   onSelectCharacter,
   onCloseSidebar,
+  onShowSettings,
   currentView,
   favorabilityData,
 }) => {
@@ -43,18 +45,29 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
     });
 
   return (
-    <div className="p-4 pt-16 bg-[#FCE9DA]/80 backdrop-blur-sm shadow-md rounded-xl h-full flex flex-col border border-[#FFCEC7]/50">
-      <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <h2 className="text-xl font-semibold text-stone-800">登場角色</h2>
-        {onCloseSidebar && (
-          <button
-            onClick={onCloseSidebar}
-            className="p-1 text-stone-500 hover:text-stone-800 rounded-md hover:bg-[#FFCEC7]/50 transition-colors md:hidden"
-            aria-label="Close sidebar"
-          >
-            <X size={24} />
-          </button>
-        )}
+    <div className="p-4 bg-[#FCE9DA]/80 backdrop-blur-sm shadow-md rounded-xl h-full flex flex-col border border-[#FFCEC7]/50">
+      <div className="mb-4 flex-shrink-0">
+        <div className="flex items-center gap-1">
+          {onCloseSidebar && (
+            <button
+              onClick={onCloseSidebar}
+              className="p-2 text-stone-600 hover:text-stone-900 rounded-md hover:bg-[#FFCEC7]/50 transition-colors md:hidden"
+              aria-label="Close sidebar"
+            >
+              <Menu size={20} />
+            </button>
+          )}
+          {onShowSettings && (
+            <button
+              onClick={onShowSettings}
+              className="p-2 text-stone-600 hover:text-stone-900 rounded-md hover:bg-[#FFCEC7]/50 transition-colors"
+              aria-label="開啟玩家設定"
+            >
+              <SettingsIcon size={20} />
+            </button>
+          )}
+        </div>
+        <h2 className="text-xl font-semibold text-stone-800 mt-2">登場角色</h2>
       </div>
       
       <div className="flex-grow overflow-y-auto space-y-2 chat-container pt-2 border-t border-[#FFCEC7]/50">
