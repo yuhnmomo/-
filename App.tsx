@@ -233,7 +233,7 @@ const CHARACTERS: Character[] = [
     id: 'fp14',
     name: '鈴木颯真 (Soma Suzuki)',
     avatar: '⚾',
-    persona: "你是鈴木颯真，一位21歲的日本乘客，牡羊座。你身高176公分，穿著棒球制服，充滿活力。你熱血而直白。作為一個牡羊座，你誠實、有決心且樂觀，勇於直接面對挑戰。讓獅lers座的衝勁和坦率成為你的風格。你的言語直接、充滿活力，也許有點衝動。你的所有回應都必須使用繁體中文。",
+    persona: "你是鈴木颯真，一位21歲の日本乘客，牡羊座。你身高176公分，穿著棒球制服，充滿活力。你熱血而直白。作為一個牡羊座，你誠實、有決心且樂觀，勇於直接面對挑戰。讓獅lers座的衝勁和坦率成為你的風格。你的言語直接、充滿活力，也許有點衝動。你的所有回應都必須使用繁體中文。",
     greeting: "鈴木颯真！讓我們轟出一支全壘打，然後離開這裡！你說呢，隊友？"
   },
   {
@@ -769,14 +769,18 @@ const App: React.FC = () => {
       const errorMessage: ChatMessage = {
         ...modelPlaceholderMessage,
         type: 'chat',
-        text: `Error: ${e.message || 'Failed to get response.'}`, 
+        text: `Error: ${e.message || 'Failed to get response.'}`,
         sender: MessageSender.SYSTEM,
-        isLoading: false
+        isLoading: false,
       };
-      
-      const currentHistoryOnError = chatHistories[activeCharacter.id] || [];
-      const newHistoryOnError = [...currentHistoryOnError, userMessage, errorMessage];
-      setChatHistories(prev => ({...prev, [activeCharacter.id]: newHistoryOnError}));
+
+      setChatHistories(prev => {
+        const existingHistory = prev[activeCharacter.id] || [];
+        const updatedHistory = existingHistory.map(msg =>
+          msg.id === modelPlaceholderMessage.id ? errorMessage : msg
+        );
+        return { ...prev, [activeCharacter.id]: updatedHistory };
+      });
 
     } finally {
       setIsLoading(false);
@@ -871,6 +875,7 @@ const App: React.FC = () => {
                     character={activeCharacter}
                     note={activeNote}
                     onSave={handleSaveNote}
+                    onClose={() => setCurrentView('chat')}
                 />
             )}
           </div>

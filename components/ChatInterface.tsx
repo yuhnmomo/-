@@ -6,7 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Character, MessageSender, Player } from '../types'; 
 import MessageItem from './MessageItem';
-import { Send, Users, RefreshCw, BookUser } from 'lucide-react';
+import { Send, Users, RefreshCw, BookUser, Smile } from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -40,13 +40,36 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onSetView,
 }) => {
   const [userQuery, setUserQuery] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
+  
+  const EMOJIS = ['😍','❤️','😘','🫣','🤤','😑','😒','🙄','😬','😮‍💨','😡','💋','💢','💦','🥺','🥹','😝','😆','🤣','😂','😰','😤','😭','😱','💖','😽','🥵','😵','😎'];
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(scrollToBottom, [messages]);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node) &&
+        emojiButtonRef.current &&
+        !emojiButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleSend = () => {
     if (userQuery.trim() && !isLoading) {
@@ -60,6 +83,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       onRestartConversation(activeCharacter.id);
     }
   };
+  
+  const handleEmojiSelect = (emoji: string) => {
+    setUserQuery(prev => prev + emoji);
+  };
+
 
   const placeholderText = activeCharacter 
     ? `與 ${activeCharacter.name} 對話...`
@@ -139,7 +167,21 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
       </div>
 
-      <div className="p-4 border-t border-white/10 bg-transparent rounded-b-xl flex-shrink-0">
+      <div className="relative p-4 border-t border-white/10 bg-transparent rounded-b-xl flex-shrink-0">
+        {showEmojiPicker && (
+          <div ref={emojiPickerRef} className="absolute bottom-full left-4 mb-2 w-fit bg-[#1a1c23] border border-white/10 rounded-lg p-2 shadow-lg flex flex-wrap gap-2 max-w-[280px]">
+            {EMOJIS.map(emoji => (
+              <button
+                key={emoji}
+                onClick={() => handleEmojiSelect(emoji)}
+                className="text-2xl p-1 rounded-md hover:bg-white/10 transition-colors"
+                aria-label={`insert emoji ${emoji}`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-center gap-3">
           <textarea
             value={userQuery}
@@ -155,6 +197,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               }
             }}
           />
+          <button
+            ref={emojiButtonRef}
+            onClick={() => setShowEmojiPicker(prev => !prev)}
+            disabled={isLoading || !activeCharacter}
+            className="h-10 w-10 p-2 bg-white/10 hover:bg-white/20 text-[#EFEFF1] rounded-lg transition-colors disabled:bg-gray-600 disabled:text-gray-400 flex items-center justify-center flex-shrink-0"
+            aria-label="選擇表情符號"
+          >
+            <Smile size={20} />
+          </button>
           <button
             onClick={handleSend}
             disabled={isLoading || !userQuery.trim() || !activeCharacter}

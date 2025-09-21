@@ -180,9 +180,18 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
         
         {isModel && message.playerThought && message.characterThought && player && character ? (
           <div className="w-full">
-            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-black/30 border border-white/10 text-sm italic text-[#C9CBE0]">
-              <p className="mb-1">💭 {player.nickname}： {message.playerThought}</p>
-              <p>💭 {character.name.split(' (')[0]}： {message.characterThought}</p>
+            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-black/30 border border-white/10 text-sm text-[#C9CBE0]">
+              <p className="font-semibold text-xs text-gray-400 mb-2 uppercase tracking-wider">
+                  {character.name.split(' (')[0]} 的內心觀察
+              </p>
+              <p className="mb-1 italic">
+                  <span className="font-semibold text-gray-300 not-italic">（對你的猜想）：</span>
+                  {message.playerThought}
+              </p>
+              <p className="italic">
+                  <span className="font-semibold text-gray-300 not-italic">（自己的想法）：</span>
+                  {message.characterThought}
+              </p>
             </div>
             {bubble}
           </div>
