@@ -6,7 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Character, MessageSender, Player } from '../types'; 
 import MessageItem from './MessageItem';
-import { Send, Users, RefreshCw } from 'lucide-react';
+import { Send, Users, RefreshCw, BookUser } from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -16,6 +16,7 @@ interface ChatInterfaceProps {
   player: Player | null;
   favorability?: number;
   onRestartConversation: (characterId: string) => void;
+  onSetView: (view: 'chat' | 'status' | 'settings' | 'notebook') => void;
 }
 
 const getFavorabilityLevelString = (value: number): string => {
@@ -36,6 +37,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   player,
   favorability = 0,
   onRestartConversation,
+  onSetView,
 }) => {
   const [userQuery, setUserQuery] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -70,24 +72,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         <div className="flex items-center gap-3">
           {activeCharacter ? (
             <>
-              <div className="w-12 h-12 rounded-full bg-[#333744] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden ml-14 md:ml-0">
+              <div className="w-16 h-16 rounded-full bg-[#333744] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden ml-20 md:ml-0">
                 {activeCharacter.avatar.startsWith('http') ? (
                   <img src={activeCharacter.avatar} alt={activeCharacter.name} className="w-full h-full object-cover" />
                 ) : (
                   activeCharacter.avatar
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold text-[#EFEFF1]">{activeCharacter.name}</h2>
-                <button 
-                  onClick={handleRestart}
-                  disabled={isLoading}
-                  className="p-1.5 text-gray-400 hover:text-white rounded-md hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label="重新開始對話"
-                  title="重新開始對話"
-                >
-                  <RefreshCw size={16} />
-                </button>
+              <div className="flex flex-col items-start gap-1.5">
+                <h2 className="text-2xl font-semibold text-[#EFEFF1]">{activeCharacter.name}</h2>
+                <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onSetView('notebook')}
+                      disabled={isLoading}
+                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-300 hover:text-white rounded-md bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="查看角色筆記本"
+                    >
+                      <BookUser size={14} />
+                      <span>筆記本</span>
+                    </button>
+                    <button 
+                      onClick={handleRestart}
+                      disabled={isLoading}
+                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-300 hover:text-white rounded-md bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="重新開始對話"
+                    >
+                      <RefreshCw size={14} />
+                       <span>重置對話</span>
+                    </button>
+                </div>
               </div>
             </>
           ) : (
@@ -97,7 +110,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
       
       {player && (
-        <div className="p-2 px-4 text-xs text-[#C9CBE0] bg-black/20 border-b border-white/10 flex flex-wrap items-center gap-x-4 gap-y-1 flex-shrink-0">
+        <div className="p-2 px-4 text-sm text-[#C9CBE0] bg-black/20 border-b border-white/10 flex flex-wrap items-center gap-x-4 gap-y-1 flex-shrink-0">
           <span>玩家：{player.name} ({player.nickname} / {player.salutation})</span>
           <span>⚤ 性別：{player.gender}</span>
           <span>👤 外觀：{player.appearance.name}</span>

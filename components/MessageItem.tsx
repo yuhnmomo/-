@@ -41,7 +41,7 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
   // Case 1: Player has an uploaded avatar
   if (sender === MessageSender.USER && player?.avatar) {
     return (
-      <div className="w-8 h-8 rounded-full bg-[#ECD4D4] flex-shrink-0 overflow-hidden">
+      <div className="w-10 h-10 rounded-full bg-[#ECD4D4] flex-shrink-0 overflow-hidden">
         <img src={player.avatar} alt={player.nickname} className="w-full h-full object-cover" />
       </div>
     );
@@ -50,7 +50,7 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
   // Case 2: Model has an image URL avatar
   if (sender === MessageSender.MODEL && avatar?.startsWith('http')) {
     return (
-      <div className="w-8 h-8 rounded-full bg-[#333744] flex-shrink-0 overflow-hidden">
+      <div className="w-10 h-10 rounded-full bg-[#333744] flex-shrink-0 overflow-hidden">
         <img src={avatar} alt="character avatar" className="w-full h-full object-cover" />
       </div>
     );
@@ -67,29 +67,29 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
       avatarContent = player?.nickname || 'U';
       bgColorClass = 'bg-[#ECD4D4]';
       // Use smaller font for full name to fit in the circle.
-      fontSizeClass = 'text-xs font-semibold';
+      fontSizeClass = 'text-sm font-semibold';
       break;
     case MessageSender.MODEL:
       avatarContent = avatar || 'AI';
       bgColorClass = 'bg-[#CCDBE2]';
-      fontSizeClass = 'text-sm font-semibold';
+      fontSizeClass = 'text-base font-semibold';
       break;
     case MessageSender.SYSTEM:
     default:
       avatarContent = 'S';
       bgColorClass = 'bg-[#C9CBE0]';
-      fontSizeClass = 'text-sm font-semibold';
+      fontSizeClass = 'text-base font-semibold';
       break;
   }
   
   const isEmoji = typeof avatarContent === 'string' && /\p{Emoji}/u.test(avatarContent);
   if (isEmoji) {
-    fontSizeClass = 'text-xl';
+    fontSizeClass = 'text-2xl';
     bgColorClass = 'bg-transparent';
   }
 
   return (
-    <div className={`w-8 h-8 rounded-full ${bgColorClass} ${textColorClass} flex items-center justify-center text-center ${fontSizeClass} flex-shrink-0 p-0.5`}>
+    <div className={`w-10 h-10 rounded-full ${bgColorClass} ${textColorClass} flex items-center justify-center text-center ${fontSizeClass} flex-shrink-0 p-0.5`}>
       {avatarContent}
     </div>
   );
@@ -103,7 +103,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
       const textColor = isSummary ? 'text-[#C9CBE0]' : 'text-[#ECD4D4]';
 
       return (
-          <div className={`my-4 text-center text-xs ${textColor}`}>
+          <div className={`my-4 text-center text-sm ${textColor}`}>
               <div className={`inline-block p-2 px-4 rounded-full border ${bgColor}`}>
                   <span className="mr-2">{icon}</span>
                   {message.text}
@@ -146,12 +146,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
 
   const renderMessageContent = () => {
     if (isModel && !message.isLoading) {
-      const proseClasses = `prose prose-sm prose-invert w-full min-w-0 ${textColorClass}`;
+      const proseClasses = `prose prose-base prose-invert w-full min-w-0 ${textColorClass}`;
       const rawMarkup = marked.parse(message.text || "") as string;
       return <div className={proseClasses} dangerouslySetInnerHTML={{ __html: rawMarkup }} />;
     }
     
-    return <div className={`whitespace-pre-wrap text-sm ${textColorClass}`}>{message.text}</div>;
+    return <div className={`whitespace-pre-wrap text-base ${textColorClass}`}>{message.text}</div>;
   };
   
   const bubble = (
@@ -176,11 +176,11 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
     <div className={`flex items-start gap-3 mb-4 ${isUser ? 'flex-row-reverse' : ''}`}>
       <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />
       <div className={`flex flex-col w-full max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
-        {senderName && <p className="text-xs text-gray-400 mb-1 px-1">{senderName}</p>}
+        {senderName && <p className="text-sm text-gray-400 mb-1 px-1">{senderName}</p>}
         
         {isModel && message.playerThought && message.characterThought && player && character ? (
           <div className="w-full">
-            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-black/30 border border-white/10 text-xs italic text-[#C9CBE0]">
+            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-black/30 border border-white/10 text-sm italic text-[#C9CBE0]">
               <p className="mb-1">💭 {player.nickname}： {message.playerThought}</p>
               <p>💭 {character.name.split(' (')[0]}： {message.characterThought}</p>
             </div>

@@ -59,20 +59,6 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
           💞 關係狀態總覽
         </button>
         <button
-          onClick={() => {
-            if (activeCharacterId) {
-                onSetView('notebook');
-            } else {
-                alert('請先選擇一位角色以查看筆記本。');
-            }
-          }}
-          className={`w-full p-2.5 rounded-lg text-left transition-colors text-[#EFEFF1] font-semibold flex items-center gap-2 ${
-            currentView === 'notebook' ? 'bg-[#ECD4D4]/50' : 'hover:bg-white/10'
-          } ${!activeCharacterId ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <BookUser size={16} className="mr-1" /> 角色筆記本
-        </button>
-        <button
           onClick={() => onSetView('settings')}
           className={`w-full p-2.5 rounded-lg text-left transition-colors text-[#EFEFF1] font-semibold flex items-center gap-2 ${
             currentView === 'settings' ? 'bg-[#ECD4D4]/50' : 'hover:bg-white/10'
