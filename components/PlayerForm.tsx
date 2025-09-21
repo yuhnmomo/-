@@ -101,10 +101,10 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
         
         {/* Row 1: Avatar */}
         <div className="flex flex-col items-center gap-2">
-            <div className="w-24 h-24 rounded-full bg-[#333744] flex-shrink-0 overflow-hidden border-2 border-white/20">
-                {avatar ? <img src={avatar} alt="Avatar Preview" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">無頭像</div>}
+            <div className="w-24 h-24 rounded-full bg-stone-200 flex-shrink-0 overflow-hidden border-2 border-black/10">
+                {avatar ? <img src={avatar} alt="Avatar Preview" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-stone-500 text-sm">無頭像</div>}
             </div>
-            <label htmlFor="avatar-upload" className="cursor-pointer bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1.5">
+            <label htmlFor="avatar-upload" className="cursor-pointer bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1.5">
                 <ImageUp size={16} />
                 更換頭像
             </label>
@@ -113,41 +113,41 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
         
         {/* Row 2: Name */}
         <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">姓名</label>
-            <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#1a1c23] border border-white/20 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#ECD4D4] focus:border-[#ECD4D4]"/>
+            <label htmlFor="name" className="block text-sm font-medium text-stone-600 mb-2">姓名</label>
+            <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-[#FFFCF9] border border-[#FFD0A6]/50 rounded-lg px-3 py-2 text-stone-900 focus:ring-2 focus:ring-[#FFD0A6] focus:border-[#FFD0A6]"/>
         </div>
         
         {/* Row 3: Nickname & Salutation */}
         <div className="flex flex-col sm:flex-row items-end gap-4">
             <div className="flex-1 w-full">
-                <label htmlFor="nickname" className="block text-sm font-medium text-gray-300 mb-2">暱稱</label>
-                <input type="text" id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} className="w-full bg-[#1a1c23] border border-white/20 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#ECD4D4] focus:border-[#ECD4D4]"/>
+                <label htmlFor="nickname" className="block text-sm font-medium text-stone-600 mb-2">暱稱</label>
+                <input type="text" id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} className="w-full bg-[#FFFCF9] border border-[#FFD0A6]/50 rounded-lg px-3 py-2 text-stone-900 focus:ring-2 focus:ring-[#FFD0A6] focus:border-[#FFD0A6]"/>
             </div>
             <div className="flex-1 w-full">
-                <label htmlFor="salutation" className="block text-sm font-medium text-gray-300 mb-2">稱呼</label>
-                <input type="text" id="salutation" value={salutation} onChange={(e) => setSalutation(e.target.value)} className="w-full bg-[#1a1c23] border border-white/20 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#ECD4D4] focus:border-[#ECD4D4]"/>
+                <label htmlFor="salutation" className="block text-sm font-medium text-stone-600 mb-2">稱呼</label>
+                <input type="text" id="salutation" value={salutation} onChange={(e) => setSalutation(e.target.value)} className="w-full bg-[#FFFCF9] border border-[#FFD0A6]/50 rounded-lg px-3 py-2 text-stone-900 focus:ring-2 focus:ring-[#FFD0A6] focus:border-[#FFD0A6]"/>
             </div>
         </div>
         
         {/* Row 4: Gender & Zodiac */}
         <div className="flex flex-col sm:flex-row items-end gap-4">
             <div className="flex-1 w-full">
-                <label className="block text-sm font-medium text-gray-300 mb-2">性別</label>
+                <label className="block text-sm font-medium text-stone-600 mb-2">性別</label>
                 <div className="flex gap-2 h-[42px] items-stretch">
                     {(['男', '女'] as const).map(g => (
-                        <button key={g} onClick={() => handleGenderChange(g)} className={`w-full justify-center flex items-center px-4 py-2 rounded-lg border-2 transition-colors ${gender === g ? 'bg-[#ECD4D4] text-[#20232c] border-transparent' : 'bg-transparent border-white/20 hover:border-white/50'}`}>
+                        <button key={g} onClick={() => handleGenderChange(g)} className={`w-full justify-center flex items-center px-4 py-2 rounded-lg border-2 transition-colors ${gender === g ? 'bg-[#E098AE] text-white border-transparent' : 'bg-transparent border-[#FFD0A6] hover:border-[#E098AE]'}`}>
                             {g}
                         </button>
                     ))}
                 </div>
             </div>
             <div className="flex-1 w-full">
-                <label htmlFor="zodiac" className="block text-sm font-medium text-gray-300 mb-2">星座</label>
+                <label htmlFor="zodiac" className="block text-sm font-medium text-stone-600 mb-2">星座</label>
                 <select
                     id="zodiac"
                     value={zodiac}
                     onChange={(e) => setZodiac(e.target.value)}
-                    className="w-full bg-[#1a1c23] border border-white/20 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#ECD4D4] focus:border-[#ECD4D4] h-[42px]"
+                    className="w-full bg-[#FFFCF9] border border-[#FFD0A6]/50 rounded-lg px-3 py-2 text-stone-900 focus:ring-2 focus:ring-[#FFD0A6] focus:border-[#FFD0A6] h-[42px]"
                 >
                     {ZODIAC_SIGNS.map(sign => (
                         <option key={sign} value={sign}>
@@ -159,12 +159,12 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
         </div>
 
          <div>
-            <label htmlFor="appearance" className="block text-sm font-medium text-gray-300 mb-2">外觀</label>
+            <label htmlFor="appearance" className="block text-sm font-medium text-stone-600 mb-2">外觀</label>
             <select
                 id="appearance"
                 value={selectedAppearanceId}
                 onChange={(e) => setSelectedAppearanceId(e.target.value)}
-                className="w-full bg-[#1a1c23] border border-white/20 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#ECD4D4] focus:border-[#ECD4D4]"
+                className="w-full bg-[#FFFCF9] border border-[#FFD0A6]/50 rounded-lg px-3 py-2 text-stone-900 focus:ring-2 focus:ring-[#FFD0A6] focus:border-[#FFD0A6]"
             >
                 {availableAppearances.map(app => (
                 <option key={app.id} value={app.id}>
@@ -173,9 +173,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
                 ))}
             </select>
             {selectedAppearance && (
-                <div className="mt-2 p-3 bg-black/20 rounded-md text-xs text-gray-400 border border-white/10">
+                <div className="mt-2 p-3 bg-[#FFCEC7]/30 rounded-md text-xs text-stone-600 border border-[#FFCEC7]/50">
                     <p className="whitespace-pre-line">{selectedAppearance.description}</p>
-                    <div className="mt-2 pt-2 border-t border-white/10 text-white font-medium">
+                    <div className="mt-2 pt-2 border-t border-[#FFCEC7]/50 text-stone-800 font-medium">
                         魅力指數：
                         <span className="ml-2 font-mono tracking-wider">
                             O:{selectedAppearance.attributes.O} / I:{selectedAppearance.attributes.I} / B:{selectedAppearance.attributes.B} / S:{selectedAppearance.attributes.S}
@@ -188,7 +188,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
         <div className="pt-4">
             <button
               onClick={handleSave}
-              className="w-full flex items-center justify-center gap-2 bg-[#ECD4D4] hover:bg-[#d9c1c1] text-[#20232c] font-bold py-3 px-4 rounded-lg transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-[#E098AE] hover:bg-[#d4879d] text-white font-bold py-3 px-4 rounded-lg transition-colors"
             >
               <Save size={18} />
               {isSaved ? '已儲存！' : buttonText}

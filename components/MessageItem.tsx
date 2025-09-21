@@ -38,19 +38,19 @@ const getCharacterGender = (character: Character | null | undefined): '男' | '�
 
 
 const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?: Player | null }> = ({ sender, avatar, player }) => {
-  // Case 1: Player has an uploaded avatar
+  // Case 1: Player has an uploaded avatar (keep it round for player)
   if (sender === MessageSender.USER && player?.avatar) {
     return (
-      <div className="w-10 h-10 rounded-full bg-[#ECD4D4] flex-shrink-0 overflow-hidden">
+      <div className="w-10 h-10 rounded-full bg-orange-200 flex-shrink-0 overflow-hidden">
         <img src={player.avatar} alt={player.nickname} className="w-full h-full object-cover" />
       </div>
     );
   }
 
-  // Case 2: Model has an image URL avatar
+  // Case 2: Model has an image URL avatar (change to square)
   if (sender === MessageSender.MODEL && avatar?.startsWith('http')) {
     return (
-      <div className="w-10 h-10 rounded-full bg-[#333744] flex-shrink-0 overflow-hidden">
+      <div className="w-10 h-10 rounded-lg bg-stone-200 flex-shrink-0 overflow-hidden shadow-md border-2 border-white/80">
         <img src={avatar} alt="character avatar" className="w-full h-full object-cover" />
       </div>
     );
@@ -59,26 +59,30 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
   // Case 3: Text or Emoji Avatars
   let avatarContent: string | JSX.Element = '';
   let bgColorClass = '';
-  let textColorClass = 'text-[#20232c]';
+  let textColorClass = 'text-stone-800';
   let fontSizeClass = '';
+  let shapeClass = 'rounded-full'; // Default to round
 
   switch (sender) {
     case MessageSender.USER:
       avatarContent = player?.nickname || 'U';
-      bgColorClass = 'bg-[#ECD4D4]';
+      bgColorClass = 'bg-[#FFD0A6]';
       // Use smaller font for full name to fit in the circle.
       fontSizeClass = 'text-sm font-semibold';
+      shapeClass = 'rounded-full';
       break;
     case MessageSender.MODEL:
       avatarContent = avatar || 'AI';
-      bgColorClass = 'bg-[#CCDBE2]';
+      bgColorClass = 'bg-stone-200';
       fontSizeClass = 'text-base font-semibold';
+      shapeClass = 'rounded-lg';
       break;
     case MessageSender.SYSTEM:
     default:
       avatarContent = 'S';
-      bgColorClass = 'bg-[#C9CBE0]';
+      bgColorClass = 'bg-stone-300';
       fontSizeClass = 'text-base font-semibold';
+      shapeClass = 'rounded-full';
       break;
   }
   
@@ -87,9 +91,12 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
     fontSizeClass = 'text-2xl';
     bgColorClass = 'bg-transparent';
   }
+  
+  const extraStyles = sender === MessageSender.MODEL && !isEmoji ? 'shadow-md border-2 border-white/80' : '';
+
 
   return (
-    <div className={`w-10 h-10 rounded-full ${bgColorClass} ${textColorClass} flex items-center justify-center text-center ${fontSizeClass} flex-shrink-0 p-0.5`}>
+    <div className={`w-10 h-10 ${shapeClass} ${bgColorClass} ${textColorClass} flex items-center justify-center text-center ${fontSizeClass} flex-shrink-0 p-0.5 ${extraStyles}`}>
       {avatarContent}
     </div>
   );
@@ -98,9 +105,9 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
 const MessageItem: React.FC<MessageItemProps> = ({ message, character, player }) => {
   if (message.type === 'summary' || message.type === 'milestone') {
       const isSummary = message.type === 'summary';
-      const bgColor = isSummary ? 'bg-[#C9CBE0]/10 border-[#C9CBE0]/30' : 'bg-[#ECD4D4]/10 border-[#ECD4D4]/30';
+      const bgColor = isSummary ? 'bg-[#FFCEC7]/50 border-[#FFCEC7]' : 'bg-[#FFD0A6]/50 border-[#FFD0A6]';
       const icon = isSummary ? '💖' : '💞';
-      const textColor = isSummary ? 'text-[#C9CBE0]' : 'text-[#ECD4D4]';
+      const textColor = isSummary ? 'text-[#b17887]' : 'text-[#cc8b5a]';
 
       return (
           <div className={`my-4 text-center text-sm ${textColor}`}>
@@ -117,36 +124,22 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
   const isModel = message.sender === MessageSender.MODEL;
 
   let bubbleClasses = "p-3 rounded-lg shadow w-full "; 
-  let textColorClass = 'text-gray-100';
+  let textColorClass = 'text-stone-800';
 
-  if (isUser && player) {
-    if (player.gender === '男') {
-      bubbleClasses += 'bg-blue-700';
-      textColorClass = 'text-blue-200';
-    } else {
-      bubbleClasses += 'bg-purple-700';
-      textColorClass = 'text-purple-200';
-    }
-  } else if (isModel && character) {
-    const gender = getCharacterGender(character);
-    if (gender === '男') {
-      bubbleClasses += 'bg-blue-800';
-      textColorClass = 'text-blue-200';
-    } else if (gender === '女') {
-      bubbleClasses += 'bg-purple-800';
-      textColorClass = 'text-purple-200';
-    } else {
-      bubbleClasses += 'bg-gray-700';
-      textColorClass = 'text-gray-200';
-    }
+  if (isUser) {
+    bubbleClasses += 'bg-[#E098AE]';
+    textColorClass = 'text-white';
+  } else if (isModel) {
+    bubbleClasses += 'bg-white';
+    textColorClass = 'text-stone-800';
   } else { // System message
-    bubbleClasses += "bg-[#C9CBE0]";
-    textColorClass = 'text-[#1a1c23]';
+    bubbleClasses += "bg-yellow-200";
+    textColorClass = 'text-yellow-900';
   }
 
   const renderMessageContent = () => {
     if (isModel && !message.isLoading) {
-      const proseClasses = `prose prose-base prose-invert w-full min-w-0 ${textColorClass}`;
+      const proseClasses = `prose prose-base w-full min-w-0 ${textColorClass}`;
       const rawMarkup = marked.parse(message.text || "") as string;
       return <div className={proseClasses} dangerouslySetInnerHTML={{ __html: rawMarkup }} />;
     }
@@ -158,9 +151,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
     <div className={bubbleClasses}>
       {message.isLoading ? (
         <div className="flex items-center space-x-1.5">
-          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></div>
+          <div className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+          <div className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+          <div className="w-1.5 h-1.5 bg-stone-400 rounded-full animate-bounce"></div>
         </div>
       ) : (
         renderMessageContent()
@@ -176,20 +169,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
     <div className={`flex items-start gap-3 mb-4 ${isUser ? 'flex-row-reverse' : ''}`}>
       <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />
       <div className={`flex flex-col w-full max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
-        {senderName && <p className="text-sm text-gray-400 mb-1 px-1">{senderName}</p>}
+        {senderName && <p className="text-sm text-stone-500 mb-1 px-1">{senderName}</p>}
         
         {isModel && message.playerThought && message.characterThought && player && character ? (
           <div className="w-full">
-            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-black/30 border border-white/10 text-sm text-[#C9CBE0]">
-              <p className="font-semibold text-xs text-gray-400 mb-2 uppercase tracking-wider">
+            <div className="w-full p-2.5 mb-1.5 rounded-lg bg-[#FFCEC7]/30 border border-[#FFCEC7]/80 text-sm text-stone-700">
+              <p className="font-semibold text-xs text-stone-500 mb-2 uppercase tracking-wider">
                   {character.name.split(' (')[0]} 的內心觀察
               </p>
               <p className="mb-1 italic">
-                  <span className="font-semibold text-gray-300 not-italic">（對你的猜想）：</span>
+                  <span className="font-semibold text-stone-600 not-italic">（對你的猜想）：</span>
                   {message.playerThought}
               </p>
               <p className="italic">
-                  <span className="font-semibold text-gray-300 not-italic">（自己的想法）：</span>
+                  <span className="font-semibold text-stone-600 not-italic">（自己的想法）：</span>
                   {message.characterThought}
               </p>
             </div>

@@ -15,6 +15,7 @@ export interface Character {
   avatar: string; // Emoji or URL
   persona: string; // System instruction for the AI model
   greeting: string; // The character's first message
+  description?: string;
 }
 
 export interface ChatMessage {

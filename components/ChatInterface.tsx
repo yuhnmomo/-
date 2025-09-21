@@ -16,7 +16,7 @@ interface ChatInterfaceProps {
   player: Player | null;
   favorability?: number;
   onRestartConversation: (characterId: string) => void;
-  onSetView: (view: 'chat' | 'status' | 'settings' | 'notebook') => void;
+  onSetView: (view: 'chat' | 'settings' | 'notebook') => void;
 }
 
 const getFavorabilityLevelString = (value: number): string => {
@@ -95,12 +95,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
 
   return (
-    <div className="flex flex-col h-full bg-[#20232c]/80 backdrop-blur-sm rounded-xl shadow-md border border-white/10">
-      <div className="p-4 border-b border-white/10 flex justify-between items-center flex-shrink-0">
+    <div className="flex flex-col h-full bg-[#FCE9DA]/80 backdrop-blur-sm rounded-xl shadow-md border border-[#FFCEC7]/50">
+      <div className="p-4 border-b border-[#FFCEC7]/50 flex justify-between items-center flex-shrink-0">
         <div className="flex items-center gap-3">
           {activeCharacter ? (
             <>
-              <div className="w-16 h-16 rounded-full bg-[#333744] flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden ml-20 md:ml-0">
+              <div className="w-16 h-16 rounded-lg bg-stone-200 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden ml-32 shadow-md border-2 border-white/80">
                 {activeCharacter.avatar.startsWith('http') ? (
                   <img src={activeCharacter.avatar} alt={activeCharacter.name} className="w-full h-full object-cover" />
                 ) : (
@@ -108,12 +108,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 )}
               </div>
               <div className="flex flex-col items-start gap-1.5">
-                <h2 className="text-2xl font-semibold text-[#EFEFF1]">{activeCharacter.name}</h2>
-                <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-semibold text-stone-800">{activeCharacter.name}</h2>
+                <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => onSetView('notebook')}
                       disabled={isLoading}
-                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-300 hover:text-white rounded-md bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-stone-600 hover:text-stone-900 rounded-md bg-[#FFCEC7]/60 hover:bg-[#FFCEC7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="查看角色筆記本"
                     >
                       <BookUser size={14} />
@@ -122,29 +122,34 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     <button 
                       onClick={handleRestart}
                       disabled={isLoading}
-                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-gray-300 hover:text-white rounded-md bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-stone-600 hover:text-stone-900 rounded-md bg-[#FFCEC7]/60 hover:bg-[#FFCEC7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="重新開始對話"
                     >
                       <RefreshCw size={14} />
                        <span>重置對話</span>
                     </button>
+                    {activeCharacter.description && (
+                      <p className="text-xs text-stone-500 pl-2 border-l border-stone-400/30">
+                        {activeCharacter.description}
+                      </p>
+                    )}
                 </div>
               </div>
             </>
           ) : (
-             <h2 className="text-xl font-semibold text-[#EFEFF1] ml-14 md:ml-0">魔幻列車聊天室</h2>
+             <h2 className="text-xl font-semibold text-stone-800 ml-32">魔幻列車聊天室</h2>
           )}
         </div>
       </div>
       
       {player && (
-        <div className="p-2 px-4 text-sm text-[#C9CBE0] bg-black/20 border-b border-white/10 flex flex-wrap items-center gap-x-4 gap-y-1 flex-shrink-0">
+        <div className="p-2 px-4 text-sm text-stone-700 bg-[#FFCEC7]/40 border-b border-[#FFCEC7]/50 flex flex-wrap items-center gap-x-4 gap-y-1 flex-shrink-0">
           <span>玩家：{player.name} ({player.nickname} / {player.salutation})</span>
           <span>⚤ 性別：{player.gender}</span>
           <span>👤 外觀：{player.appearance.name}</span>
           <span>⭐ 星座：{player.zodiac}</span>
-          <span className="font-bold text-[#ECD4D4]/90">️‍🔥 情慾：{player.lust}/100</span>
-          <span className="font-bold text-[#ECD4D4]/90">💞 好感度：{getFavorabilityLevelString(favorability)}</span>
+          <span className="font-bold text-[#E098AE]">️‍🔥 情慾：{player.lust}/100</span>
+          <span className="font-bold text-[#E098AE]">💞 好感度：{getFavorabilityLevelString(favorability)}</span>
         </div>
       )}
 
@@ -157,9 +162,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
               ))}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
+            <div className="flex flex-col items-center justify-center h-full text-center text-stone-500">
               <Users size={48} className="mb-4" />
-              <h3 className="text-lg font-semibold text-[#EFEFF1]">歡迎來到魔幻列車</h3>
+              <h3 className="text-lg font-semibold text-stone-900">歡迎來到魔幻列車</h3>
               <p className="max-w-xs">請從側邊欄選擇一位角色開始對話。</p>
             </div>
           )}
@@ -167,14 +172,14 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </div>
       </div>
 
-      <div className="relative p-4 border-t border-white/10 bg-transparent rounded-b-xl flex-shrink-0">
+      <div className="relative p-4 border-t border-[#FFCEC7]/50 bg-transparent rounded-b-xl flex-shrink-0">
         {showEmojiPicker && (
-          <div ref={emojiPickerRef} className="absolute bottom-full left-4 mb-2 w-fit bg-[#1a1c23] border border-white/10 rounded-lg p-2 shadow-lg flex flex-wrap gap-2 max-w-[280px]">
+          <div ref={emojiPickerRef} className="absolute bottom-full left-4 mb-2 w-fit bg-white border border-gray-200 rounded-lg p-2 shadow-lg flex flex-wrap gap-2 max-w-[280px]">
             {EMOJIS.map(emoji => (
               <button
                 key={emoji}
                 onClick={() => handleEmojiSelect(emoji)}
-                className="text-2xl p-1 rounded-md hover:bg-white/10 transition-colors"
+                className="text-2xl p-1 rounded-md hover:bg-gray-100 transition-colors"
                 aria-label={`insert emoji ${emoji}`}
               >
                 {emoji}
@@ -187,7 +192,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             value={userQuery}
             onChange={(e) => setUserQuery(e.target.value)}
             placeholder={placeholderText}
-            className="flex-grow h-10 min-h-[40px] py-2 px-3 border-none bg-[#1a1c23] text-[#EFEFF1] placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-[#ECD4D4] transition-shadow resize-none text-sm"
+            className="flex-grow h-10 min-h-[40px] py-2 px-3 border border-[#FFD0A6]/50 bg-[#FFFCF9] text-stone-800 placeholder-stone-500 rounded-lg focus:ring-2 focus:ring-[#FFD0A6] transition-shadow resize-none text-sm"
             rows={1}
             disabled={isLoading || !activeCharacter}
             onKeyPress={(e) => {
@@ -201,7 +206,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             ref={emojiButtonRef}
             onClick={() => setShowEmojiPicker(prev => !prev)}
             disabled={isLoading || !activeCharacter}
-            className="h-10 w-10 p-2 bg-white/10 hover:bg-white/20 text-[#EFEFF1] rounded-lg transition-colors disabled:bg-gray-600 disabled:text-gray-400 flex items-center justify-center flex-shrink-0"
+            className="h-10 w-10 p-2 bg-[#FFD0A6]/80 hover:bg-[#FFD0A6] text-stone-700 rounded-lg transition-colors disabled:bg-[#FFCEC7] disabled:text-stone-500 flex items-center justify-center flex-shrink-0"
             aria-label="選擇表情符號"
           >
             <Smile size={20} />
@@ -209,7 +214,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <button
             onClick={handleSend}
             disabled={isLoading || !userQuery.trim() || !activeCharacter}
-            className="h-10 w-10 p-2 bg-[#ECD4D4] hover:bg-[#d9c1c1] text-[#20232c] rounded-lg transition-colors disabled:bg-gray-600 disabled:text-gray-400 flex items-center justify-center flex-shrink-0"
+            className="h-10 w-10 p-2 bg-[#E098AE] hover:bg-[#d4879d] text-white rounded-lg transition-colors disabled:bg-[#FFCEC7] disabled:text-stone-500 flex items-center justify-center flex-shrink-0"
             aria-label="傳送訊息"
           >
             {isLoading ? 
