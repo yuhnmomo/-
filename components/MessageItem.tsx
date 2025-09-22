@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 // FIX: Remove MessageType as it's not an exported member of types.ts.
 import { ChatMessage, MessageSender, Player, Character } from '../types';
+import { Copy, Check, ArrowUpRight } from 'lucide-react';
 
 marked.setOptions({
   highlight: function(code, lang) {
@@ -21,6 +22,7 @@ interface MessageItemProps {
   message: ChatMessage;
   character?: Character | null;
   player?: Player | null;
+  onUseHint?: (hint: string) => void;
 }
 
 const getCharacterGender = (character: Character | null | undefined): '男' | '女' | 'unknown' => {
@@ -70,7 +72,17 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
 };
 
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, character, player }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, character, player, onUseHint }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(message.text)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      })
+      .catch(err => console.error('Failed to copy text: ', err));
+  };
 
   const renderThoughtBubble = (thought: string, ownerName: string, type: 'player' | 'character') => {
     const title = `💭 ${ownerName}的內心彈幕：`;
@@ -87,9 +99,20 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
   
   const renderStoryHint = (hint: string) => {
     return (
-      <div className="mt-2 text-xs text-stone-600 p-3 rounded-lg bg-[#FFFCF9]/80 border border-[#FFD0A6]/50 backdrop-blur-sm">
-        <span className="font-semibold">📖 劇情提示：</span>
-        <span>{hint}</span>
+      <div className="mt-2 text-xs text-stone-600 p-3 rounded-lg bg-[#FFFCF9]/80 border border-[#FFD0A6]/50 backdrop-blur-sm flex items-center justify-between gap-2">
+        <div>
+            <span className="font-semibold">📖 劇情提示：</span>
+            <span>{hint}</span>
+        </div>
+        {onUseHint && (
+          <button
+            onClick={() => onUseHint(hint)}
+            className="p-1.5 rounded-full text-stone-500 hover:bg-[#FFD0A6]/50 hover:text-stone-800 transition-colors flex-shrink-0"
+            aria-label="使用此提示"
+          >
+            <ArrowUpRight size={14} />
+          </button>
+        )}
       </div>
     );
   };
@@ -141,7 +164,16 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
         {isModel && message.playerThought && renderThoughtBubble(message.playerThought, playerName, 'player')}
         {isModel && message.characterThought && renderThoughtBubble(message.characterThought, characterName, 'character')}
 
-        <div className={`px-4 py-2.5 rounded-2xl ${bubbleColor} ${bubbleShape} shadow-sm`}>
+        <div className={`relative group px-4 py-2.5 rounded-2xl ${bubbleColor} ${bubbleShape} shadow-sm`}>
+          {isModel && (
+            <button 
+              onClick={handleCopy}
+              className="absolute top-1.5 right-1.5 z-10 p-1.5 rounded-md bg-white/20 text-stone-600 hover:bg-white/50 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100 backdrop-blur-sm"
+              aria-label={isCopied ? '已複製' : '複製訊息'}
+            >
+              {isCopied ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
+            </button>
+          )}
           {message.isLoading ? (
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]"></div>

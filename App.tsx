@@ -663,6 +663,34 @@ const App: React.FC = () => {
     }));
   };
 
+  const handleManualSummary = async (characterId: string) => {
+    if (!player) return;
+    const character = CHARACTERS.find(c => c.id === characterId);
+    if (!character) return;
+
+    const historyToSummarize = chatHistories[characterId] || [];
+    if (historyToSummarize.length > 1) {
+      setIsLoading(true);
+      try {
+        const summary = await generateConversationSummary(character, player, historyToSummarize);
+        const summaryText = `--- 手動摘要 (${new Date().toLocaleString()}) ---\n${summary}\n\n`;
+        // Prepend the summary to the existing notes
+        setNotebooks(prev => ({
+          ...prev,
+          [characterId]: summaryText + (prev[characterId] || ''),
+        }));
+        alert('摘要已成功存入筆記本！');
+      } catch (error) {
+        console.error("Failed to generate manual summary:", error);
+        alert("生成摘要時發生錯誤。");
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      alert("對話內容太少，無法生成摘要。");
+    }
+  };
+
   const handleSaveSettings = (updatedPlayer: Player) => {
     setPlayer(updatedPlayer);
     setAppState('chatting');
@@ -741,6 +769,7 @@ const App: React.FC = () => {
             player={player}
             favorability={currentFavorability}
             onRestartConversation={handleRestartConversation}
+            onManualSummary={handleManualSummary}
             onOpenSidebar={() => setIsSidebarOpen(true)}
             onSetView={(view) => {
               if (view === 'notebook') setAppState('notebook');

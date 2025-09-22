@@ -6,7 +6,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage, Character, MessageSender, Player } from '../types'; 
 import MessageItem from './MessageItem';
-import { Send, Users, RefreshCw, BookUser, Smile, Menu } from 'lucide-react';
+import { Send, Users, RefreshCw, BookUser, Smile, Menu, ClipboardList } from 'lucide-react';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -16,6 +16,7 @@ interface ChatInterfaceProps {
   player: Player | null;
   favorability?: number;
   onRestartConversation: (characterId: string) => void;
+  onManualSummary: (characterId: string) => void;
   onOpenSidebar: () => void;
   onSetView: (view: 'chat' | 'settings' | 'notebook') => void;
 }
@@ -38,6 +39,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   player,
   favorability = 0,
   onRestartConversation,
+  onManualSummary,
   onOpenSidebar,
   onSetView,
 }) => {
@@ -100,6 +102,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     setUserQuery(prev => prev + emoji);
   };
 
+  const handleUseHint = (hint: string) => {
+    setUserQuery(hint);
+    textareaRef.current?.focus();
+  };
+
 
   const placeholderText = activeCharacter 
     ? `與 ${activeCharacter.name} 對話...`
@@ -147,6 +154,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       <RefreshCw size={14} />
                        <span>重置對話</span>
                     </button>
+                    <button
+                      onClick={() => activeCharacter && onManualSummary(activeCharacter.id)}
+                      disabled={isLoading || messages.length < 2}
+                      className="flex items-center gap-1.5 px-2 py-1 text-xs text-stone-600 hover:text-stone-900 rounded-md bg-[#FFCEC7]/60 hover:bg-[#FFCEC7] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="手動儲存對話摘要"
+                    >
+                      <ClipboardList size={14} />
+                      <span>儲存摘要</span>
+                    </button>
                     {activeCharacter.description && (
                       <p className="text-xs text-stone-500 pl-2 border-l border-stone-400/30">
                         {activeCharacter.description}
@@ -177,7 +193,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           {activeCharacter ? (
             <>
               {messages.map((msg) => (
-                <MessageItem key={msg.id} message={msg} character={activeCharacter} player={player} />
+                <MessageItem key={msg.id} message={msg} character={activeCharacter} player={player} onUseHint={handleUseHint} />
               ))}
             </>
           ) : (
