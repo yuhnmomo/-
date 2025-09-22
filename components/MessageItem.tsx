@@ -85,6 +85,15 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
     );
   };
   
+  const renderStoryHint = (hint: string) => {
+    return (
+      <div className="mt-2 text-xs text-stone-600 p-3 rounded-lg bg-[#FFFCF9]/80 border border-[#FFD0A6]/50 backdrop-blur-sm">
+        <span className="font-semibold">📖 劇情提示：</span>
+        <span>{hint}</span>
+      </div>
+    );
+  };
+
   const createMarkup = (text: string) => {
     // Sanitize to prevent XSS. In a real app, use a more robust library like DOMPurify.
     const sanitizedHtml = marked.parse(text, { breaks: true, gfm: true }) as string;
@@ -146,6 +155,8 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player })
             />
           )}
         </div>
+        
+        {isModel && message.storyHint && renderStoryHint(message.storyHint)}
       </div>
        {isUser && (
         <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />

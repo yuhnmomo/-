@@ -28,6 +28,7 @@ export interface ChatMessage {
   isLoading?: boolean;
   playerThought?: string;
   characterThought?: string;
+  storyHint?: string;
 }
 
 // --- TYPES FOR CHARACTER CREATION ---

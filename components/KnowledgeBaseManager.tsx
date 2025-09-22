@@ -13,6 +13,7 @@ interface CharacterSelectorProps {
   onSelectCharacter: (id: string) => void;
   onCloseSidebar?: () => void;
   onShowSettings?: () => void;
+  onAvatarClick: (imageUrl: string) => void;
   currentView: 'chat' | 'status' | 'settings' | 'notebook';
   favorabilityData: Record<string, number>;
 }
@@ -33,6 +34,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
   onSelectCharacter,
   onCloseSidebar,
   onShowSettings,
+  onAvatarClick,
   currentView,
   favorabilityData,
 }) => {
@@ -84,7 +86,10 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                     : 'hover:bg-[#FFCEC7]/50'
                 }`}
               >
-                <div className="w-16 h-16 rounded-lg bg-stone-200 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden shadow-md border-2 border-white/80">
+                <div 
+                  onClick={(e) => { e.stopPropagation(); onAvatarClick(char.avatar); }}
+                  className="w-16 h-16 rounded-lg bg-stone-200 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden shadow-md border-2 border-white/80 cursor-pointer transition-transform hover:scale-105"
+                >
                   {char.avatar.startsWith('http') ? (
                     <img src={char.avatar} alt={char.name} className="w-full h-full object-cover" />
                   ) : (

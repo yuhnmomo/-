@@ -49,3 +49,22 @@ input:-webkit-autofill:active {
     box-shadow: 0 0 0px 1000px #FFFCF9 inset; /* Use a large inset shadow to fake the background */
     transition: background-color 5000s ease-in-out 0s; /* Delay transition to prevent flashing */
 }
+
+/* --- Keyframes for Lightbox Animation --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s ease-out forwards;
+}

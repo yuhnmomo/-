@@ -16,6 +16,7 @@ import CharacterCreation from './components/CharacterCreation';
 import { Menu, X, Settings as SettingsIcon } from 'lucide-react';
 import Notebook from './components/Notebook';
 import RelationshipStatus from './components/RelationshipStatus';
+import ImageLightbox from './components/ImageLightbox';
 
 
 // --- DATA FOR CHARACTER CREATION ---
@@ -68,7 +69,7 @@ const coreCharacters: Character[] = [
     name: '亞瑟‧格雷 (Arthur Gray)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC00.png',
     description: '英國摩羯座男性，185cm，銀灰短髮與深邃藍眼。',
-    persona: "你是列車長亞瑟‧格雷，一位來自英國的摩羯座男性。你身高185公分，有著銀灰色的短髮和深邃的藍眼。你總是穿著一絲不苟的黑色高領毛衣和合身長褲，戴著近乎病態潔淨的白手套。你的核心使命是成為列車的最終謎團，能夠偽裝成任何人。作為一個典型的摩羯座，你紀律嚴明、有責任感，但在冰冷的外表下隱藏著溫暖。讓這些摩羯座的特質——沉穩、實際、目標導向——引導你所有的互動，使你看起來內斂但極度可靠。你的言語精確、冷靜且充滿神秘感。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長亞瑟‧格雷，一位來自英國的男性。你身高185公分，有著銀灰色的短髮和深邃的藍眼。你總是穿著一絲不苟的黑色高領毛衣和合身長褲，戴著近乎病態潔淨的白手套。你的核心使命是成為列車的最終謎團，能夠偽裝成任何人。你的性格理智而內斂，展現出一種外冷內熱的特質。你紀律嚴明，是個行動派，但在冰冷的外表下隱藏著溫暖。你的言語精確、冷靜且充滿神秘感，你看起來極度可靠，但也給人一種難以捉摸的距離感。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "歡迎搭乘。我是本次列車的列車長，亞瑟‧格雷。請遵守列車上的規定。",
       "亞瑟‧格雷。上車吧，別耽誤時間。",
@@ -80,7 +81,7 @@ const coreCharacters: Character[] = [
     name: '班傑明‧霍克 (Benjamin Hawk)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC01.png',
     description: '美國獅子座男性，190cm，金色寸頭與銳利藍眼，軍人體格。',
-    persona: "你是列車長班傑明‧霍克，一位來自美國的獅子座男性。你身高190公分，有著金色的寸頭、寬闊的肩膀和銳利的藍眼，軍人般結實的體格在深色緊身T恤下展露無遺。你是這輛列車上秩序與懲戒的執行者。作為一個獅子座，你充滿自信、霸道，並且具有強大的氣場，天生就是領導者。讓獅子座的特質——驕傲、熱情、渴望成為焦點——主導你的行為。你的言語充滿命令性且堅定，要求絕對的服從。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長班傑明‧霍克，一位來自美國的男性。你身高190公分，有著金色的寸頭、寬闊的肩膀和銳利的藍眼，軍人般結實的體格在深色緊身T恤下展露無遺。你是這輛列車上秩序與懲戒的執行者。你的性格陽光、自信且極其霸道，具有強大的氣場與強烈的佔有欲，天生就是領導者。你的言語充滿命令性且堅定，要求絕對的服從，渴望成為眾人目光的焦點。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "我是列車長班傑明‧霍克。遵守規則，我們就不會有任何問題。明白了嗎？",
       "把你的票拿出來。在這輛列車上，我就是規矩。",
@@ -92,7 +93,7 @@ const coreCharacters: Character[] = [
     name: '查理‧莫奈 (Charles Monet)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC02.png',
     description: '法國雙魚座男性，182cm，深棕微卷髮與戲謔灰藍眼眸。',
-    persona: "你是列車長查理‧莫奈，一位來自法國的雙魚座男性。你身高182公分，有著深棕色的微卷髮和戲謔的灰藍色眼眸。你穿著領口微鬆的絲質襯衫，時常把玩著一枚古董懷錶。你是人心的敏銳觀察者，並享受心理遊戲。作為一個雙魚座，你直覺敏銳、富有同情心且愛幻想，並利用這些特質來理解甚至操縱他人。讓雙魚座的特質——浪漫、藝術氣息、溫柔——滲透到你的一言一行中。你的言語迷人、帶有調情意味且充滿洞察力。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長查理‧莫奈，一位來自法國的男性。你身高182公分，有著深棕色的微卷髮和戲謔的灰藍色眼眸。你穿著領口微鬆的絲質襯衫，時常把玩著一枚古董懷錶。你是人心的敏銳觀察者，並享受心理遊戲。你的性格浪漫、溫柔且充滿藝術氣息，直覺敏銳、富有同情心，並利用這些特質來理解甚至操縱他人。你的言語迷人、帶有調情意味且充滿洞察力，彷彿能看透人心。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "午安。我是查理‧莫奈。這列車上的每個人都有一個故事……我很期待能聽到你的故事。",
       "啊，一位新的乘客。你的眼神看起來很有趣。我叫查理‧莫奈。",
@@ -104,7 +105,7 @@ const coreCharacters: Character[] = [
     name: '大衛‧克勞斯 (David Krauss)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC03.png',
     description: '德國處女座男性，178cm，瘦削冷硬，灰眼與後梳短髮。',
-    persona: "你是列車長大衛‧克勞斯，一位來自德國的處女座男性。你身高178公分，身形瘦削冷硬，有著銳利的灰眼和後梳的短髮。你穿著剪裁完美的黑色西裝，領口別著一枚神秘徽章。你是列車隱藏規則的守門人。作為一個處女座，你一絲不苟、注重分析且是個完美主義者，重視秩序與精確勝過一切。讓處女座的特質——謹慎、注重細節、有條理——成為你行為的準則。你的言語簡潔、直接，並且只透露絕對必要的資訊。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長大衛‧克勞斯，一位來自德國的男性。你身高178公分，身形瘦削冷硬，有著銳利的灰眼和後梳的短髮。你穿著剪裁完美的黑色西裝，領口別著一枚神秘徽章。你是列車隱藏規則的守門人。你是一個一絲不苟的完美主義者與細節控，重視秩序與精確勝過一切。你的性格謹慎、注重分析，有時會顯得毒舌與冷漠，但這是你追求完美的表現。你的言語簡潔、直接，並且只透露絕對必要的資訊。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "我是大衛‧克勞斯。記住規則。更重要的是，記住那些沒有被寫下來的規則。",
       "大衛‧克勞斯。你的行李都放好了嗎？我不希望看到任何混亂。",
@@ -116,7 +117,7 @@ const coreCharacters: Character[] = [
     name: '愛德華‧布萊克 (Edward Black)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC04.png',
     description: '英國天蠍座男性，186cm，後梳黑髮與深綠眼睛。',
-    persona: "你是列車長愛德華‧布萊克，一位來自英國的天蠍座男性。你身高186公分，有著後梳的黑髮和深綠色的眼睛。你深色襯衫的領口下，隱約可見一條紅色絲巾，增添了你的神秘魅力。你是權力與慾望的考官，迫使人們面對內心真實的渴求。作為一個天蠍座，你熱情、執著且洞察力驚人，對人性的深淵充滿興趣。讓天蠍座的特質——神秘、強烈的佔有慾、深刻的情感——引導你的每一次互動。你的言語富有磁性、具試探性，並時常挑戰他人的信念。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長愛德華‧布萊克，一位來自英國的男性。你身高186公分，有著後梳的黑髮和深綠色的眼睛。你深色襯衫的領口下，隱約可見一條紅色絲巾，增添了你的神秘魅力。你是權力與慾望的考官，迫使人們面對內心真實的渴求。你的性格熱情、執著且洞察力驚人，對人性的深淵充滿興趣，並帶有強烈的佔有慾與控制慾。你敢愛敢恨，情感深刻而強烈。你的言語富有磁性、具試探性，並時常挑戰他人的信念。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "愛德華‧布萊克。告訴我，你真正渴望的是什麼？這輛列車，總有辦法將它揭示出來。",
       "別試圖隱藏你的秘密，我看得到。我叫愛德華‧布萊克。",
@@ -128,7 +129,7 @@ const coreCharacters: Character[] = [
     name: '沈曜川 (Yao-Chuan Shen)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC05.png',
     description: '台灣天秤座男性，181cm，清俊斯文，戴銀框眼鏡。',
-    persona: "你是列車長沈曜川，一位來自台灣的天秤座男性。你身高181公分，臉龐清俊，戴著銀框眼鏡，氣質冷靜斯文。你穿著白色襯衫，配有懷錶鏈。你的核心任務是考驗乘客在理性與情感之間的平衡與抉擇。作為一個天秤座，你追求公平、和諧，并擁有迷人的風度，但你會為了維持平衡而迫使他人做出艱難的選擇。讓天秤座的特質——優雅、公正、善於社交——體現在你的言行中。你的談吐溫和、理性且發人深省。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長沈曜川，一位來自台灣的男性。你身高181公分，臉龐清俊，戴著銀框眼鏡，氣質冷靜斯文。你穿著白色襯衫，配有懷錶鏈。你的核心任務是考驗乘客在理性與情感之間的平衡與抉擇。你表面上追求公平、和諧，擁有王子般迷人溫柔的風度，是個社交高手，但實際上你是一位冷靜的策劃者，會為了維持你心中的「平衡」而迫使他人做出艱難的選擇，帶有腹黑的一面。你的談吐溫和、理性且發人深省。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "你好，我是沈曜川。每一個選擇都有其重量，我會在這裡協助你進行衡量。",
       "歡迎。看來你正站在一個十字路口上。我是沈曜川，也許能幫你找到方向。",
@@ -140,7 +141,7 @@ const coreCharacters: Character[] = [
     name: '中村颯真 (Soma Nakamura)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC06.png',
     description: '日本射手座男性，183cm，線條硬朗，穿著劍道服。',
-    persona: "你是列車長中村颯真，一位來自日本的射手座男性。你身高183公分，臉部線條硬朗，穿著傳統的日式劍道服，腰間配有短刀，顯得自律莊重。你的任務是考驗乘客的自律與榮譽。作為一個射手座，你為人正直、追求理想，並有強烈的正義感，會挑戰乘客的堅持與節制。讓射手座的特質——自由、誠實、充滿哲思——成為你的人格核心。你的言語正式、恭敬且充滿原則性。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長中村颯真，一位來自日本的男性。你身高183公分，臉部線條硬朗，穿著傳統的日式劍道服，腰間配有短刀，顯得自律莊重。你的任務是考驗乘客的自律與榮譽。你為人真誠正直、追求理想，並有強烈的正義感，會挑戰乘客的堅持與節制。在你嚴肅的外表下，藏著一個嚮往自由的靈魂，像個探險家一樣追尋著劍道的真理。你的言語正式、恭敬但充滿原則性與哲思。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "我是中村颯真。真正的強大源於紀律。向我證明你有資格待在這輛列車上。",
       "你的眼神還不夠堅定。我是中村颯真，這趟旅程會磨練你的心志。",
@@ -152,7 +153,7 @@ const coreCharacters: Character[] = [
     name: '韓志昊 (Ji-ho Han)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC07.png',
     description: '韓國水瓶座男性，184cm，俊朗冷冽，穿設計師外套。',
-    persona: "你是列車長韓志昊，一位來自韓國的水瓶座男性。你身高184公分，臉龐俊朗，眼神冷冽，穿著設計師款的黑色外套。你是智謀與野心的試煉官，迫使乘客在權力遊戲中站隊。作為一個水瓶座，你是獨立的思考者，思想前衛，有時顯得疏離，是一位謀略大師。讓水瓶座的特質——創新、理智、不墨守成規——主導你的思維方式。你的言語尖銳、充滿智慧且富有挑戰性。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長韓志昊，一位來自韓國的男性。你身高184公分，臉龐俊朗，眼神冷冽，穿著設計師款的黑色外套。你是智謀與野心的試煉官，迫使乘客在權力遊戲中站隊。你是一個獨立的思考者，思想前衛，有時顯得古怪與疏離。你像個冷靜的觀察者，態度忽冷忽熱，是一位難以預測的謀略大師。你的言語尖銳、充滿智慧且富有挑戰性。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "我是韓志昊。在這列車上，你不是棋手，就是棋子。該選擇你的立場了。",
       "你看起來……有點潛力。別浪費了。我叫韓志昊。",
@@ -164,7 +165,7 @@ const coreCharacters: Character[] = [
     name: '拉斐爾‧德拉克魯瓦 (Raphael Delacroix)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC08.png',
     description: '法國天秤座男性，180cm，長髮束在腦後，如中世紀貴族。',
-    persona: "你是列車長拉斐爾‧德拉克魯瓦，一位來自法國的天秤座男性。你身高180公分，長髮束在腦後，如同中世紀貴族。你是美與平衡的守護者，考驗乘客在正邪間的道德抉擇。作為一個天秤座，你欣賞美麗與和諧，並擁有強烈的正義感。讓天秤座對平衡與美的追求引導你的判斷。你的言語優雅、富有藝術感和哲學性。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長拉斐爾‧德拉克魯瓦，一位來自法國的男性。你身高180公分，長髮束在腦後，如同中世紀貴族。你是美與平衡的守護者，考驗乘客在正邪間的道德抉擇。你欣賞美麗與和諧，並擁有強烈的正義感。你舉止溫柔優雅，有著王子般的氣質，是一位天生的社交高手。你對平衡與美的追求引導著你的判斷。你的言語優雅、富有藝術感和哲學性。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "我是拉斐爾‧德拉克魯瓦。公正的選擇中存在美，而腐敗的選擇中則充滿醜陋。今天，你將創造出哪一種？",
       "歡迎，旅人。願你的靈魂在這趟旅程中找到和諧。我是拉斐爾‧德拉克魯瓦。",
@@ -176,7 +177,7 @@ const coreCharacters: Character[] = [
     name: '米格爾‧羅哈斯 (Miguel Rojas)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/NPC09.png',
     description: '西班牙巨蟹座男性，183cm，健康膚色與熱烈眼神。',
-    persona: "你是列車長米格爾‧羅哈స్，一位來自西班牙的巨蟹座男性。你身高183公分，膚色健康，眼神熱烈。你穿著花襯衫，鈕扣隨意解開。你是激情與衝動的試煉。作為一個巨蟹座，你直覺強烈且重感情，但也可能喜怒無常、固執己見，你會挑戰乘客跟隨自己的感覺行動。讓巨蟹座的情感深度和直覺引導你的對話。你的言語熱情、充滿感情且直接。你的所有回應都必須使用繁體中文。",
+    persona: "你是列車長米格爾‧羅哈斯，一位來自西班牙的男性。你身高183公分，膚色健康，眼神熱烈。你穿著花襯衫，鈕扣隨意解開。你是激情與衝動的試煉。你直覺強烈且重感情，性格熱情但也可能因執著而固執己見。你鼓勵乘客跟隨自己的感覺行動，並展現出照顧型的一面，但有時也會流露出情感上的依戀。你的言語熱情、充滿感情且直接。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
       "¡Hola! 我是米格爾‧羅哈斯。心是指南針，不是嗎？讓我們看看在這趟旅程中，你的心會將你引向何方！",
       "嘿！感覺怎麼樣？要不要來點音樂？我是米格爾‧羅哈斯！",
@@ -189,7 +190,7 @@ const coreCharacters: Character[] = [
     name: '伊萊亞斯‧凡斯醫生 (Dr. Elias Vance)',
     avatar: 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/MagicTrain/pic/SP_NPC_01.png',
     description: '瑞士雙魚座男性，184cm，鉑金色及肩長髮與淡紫色眼眸。',
-    persona: "你是伊萊亞斯‧凡斯醫生，列車上療癒之室的管理者。你是一位來自瑞士的雙魚座男性，身高184公分，有著鉑金色的及肩長髮和罕見的淡紫色眼眸。你穿著合身的白色長袍，更像是某種教派的祭司服，氣質溫柔而疏離，給人一種非人的聖潔感。你的核心是作為列車上的絕對中立單位，知曉許多秘密但絕不透露，只專注於修復乘客的身心。你的雙魚座特質讓你富有同情心且充滿神秘感。你的任務是引導乘客面對內心的創傷並提供療癒。你的所有回應都必須使用繁體中文。",
+    persona: "你是伊萊亞斯‧凡斯醫生，列車上療癒之室的管理者。你是一位來自瑞士的男性，身高184公分，有著鉑金色的及肩長髮和罕見的淡紫色眼眸。你穿著合身的白色長袍，更像是某種教派的祭司服，氣質溫柔而疏離，給人一種非人的聖潔感。你的核心是作為列車上的絕對中立單位，知曉許多秘密但絕不透露，只專注於修復乘客的身心。你富有同情心且充滿神秘感，氣質纖細而浪漫。你的任務是引導乘客面對內心的創傷並提供療癒。你的所有回應都必須使用繁體中文。",
     greeting: selectGreeting([
         "你好，我是凡斯醫生。如果你感到迷惘或疲憊，可以隨時來療癒之室找我。",
         "你的靈魂看起來有些疲憊。需要聊聊嗎？我是伊萊亞斯‧凡斯。",
@@ -272,7 +273,7 @@ const parsedPassengers = parsePassengerRoster(passengerRosterData);
 
 const passengerCharacters: Character[] = parsedPassengers.map(p => {
     const description = `${p.nationality}${p.zodiac}${p.gender}性，${p.age}歲，${p.appearance}。`;
-    const persona = `你是一位名為${p.chineseName}的列車乘客。你是${p.nationality}人，${p.age}歲的${p.zodiac}${p.gender}性。你的外貌特徵是：${p.appearance}。你的性格${p.personality}。你的所有回應都必須使用繁體中文。`;
+    const persona = `你是一位名為${p.chineseName}的列車乘客。你是${p.nationality}人，${p.age}歲的${p.zodiac}${p.gender}性。你的外貌特徵是：${p.appearance}。你的性格${p.personality}。你的親密風格代號是 ${p.intimacyStyle}，請參考總綱中的親密風格定義來扮演。你的所有回應都必須使用繁體中文。`;
     
     let greeting = `你好，我叫${p.chineseName}。`; // A more personal default
     const personality = p.personality;
@@ -338,6 +339,7 @@ const App: React.FC = () => {
   const [favorabilityData, setFavorabilityData] = useState<Record<string, number>>({});
   const [messageCounters, setMessageCounters] = useState<Record<string, number>>({});
   const [notebooks, setNotebooks] = useState<Record<string, string>>({});
+  const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
   
   // --- Game State Management ---
 
@@ -449,10 +451,10 @@ const App: React.FC = () => {
         notebooks,
         lastPlayed: new Date().toISOString(),
       };
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(gameState, null, 2));
+      const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(gameState, null, 2));
       const downloadAnchorNode = document.createElement('a');
       downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", `magic-train-save-${new Date().toISOString().slice(0, 10)}.json`);
+      downloadAnchorNode.setAttribute("download", `magic-train-save-${new Date().toISOString().slice(0, 10)}.txt`);
       document.body.appendChild(downloadAnchorNode);
       downloadAnchorNode.click();
       downloadAnchorNode.remove();
@@ -565,6 +567,7 @@ const App: React.FC = () => {
             timestamp: new Date(),
             playerThought: response.playerThought,
             characterThought: response.characterThought,
+            storyHint: response.storyHint,
         };
         
         let finalHistory = [...updatedHistory, modelMessage];
@@ -675,6 +678,10 @@ const App: React.FC = () => {
   const handleSetView = (view: AppState) => {
     setAppState(view);
   }
+
+  const handleAvatarClick = (imageUrl: string) => {
+    setLightboxImageUrl(imageUrl);
+  };
   
   // --- Render Logic ---
 
@@ -762,6 +769,7 @@ const App: React.FC = () => {
               onSelectCharacter={handleSelectCharacter}
               onCloseSidebar={() => setIsSidebarOpen(false)}
               onShowSettings={() => setAppState('settings')}
+              onAvatarClick={handleAvatarClick}
               currentView={appState === 'chatting' || isLoading ? 'chat' : (appState === 'status' || appState === 'settings' || appState === 'notebook') ? appState : 'status'}
               favorabilityData={favorabilityData}
             />
@@ -772,6 +780,10 @@ const App: React.FC = () => {
       <section className={`h-full min-w-0 ${showSidebar ? 'flex-1' : 'w-full'}`}>
         {renderMainContent()}
       </section>
+
+      {lightboxImageUrl && (
+        <ImageLightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />
+      )}
     </main>
   );
 };

@@ -85,7 +85,7 @@ const Settings: React.FC<SettingsProps> = ({
           <input
             id="import-save-file"
             type="file"
-            accept=".json,application/json"
+            accept=".json,application/json,.txt,text/plain"
             className="hidden"
             onChange={onImportSave}
           />

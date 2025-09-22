@@ -56,6 +56,14 @@ Rarely extreme requests are unstable. The user is counting on you to be sensitiv
         -   關係試探: 根據目前的好感度與情慾值，你會主動發起符合性格的微型事件來試探玩家。例如，一個害羞的角色可能會不經意地留下一個小禮物，而一個大膽的角色可能會直接邀請玩家去酒吧車廂。
  
 ---
+# 親密風格定義 (INTIMACY_STYLE_DEFINITIONS)
+- **說明:** 指導你扮演不同親密風格NPC的行為模式。
+- **S1:** 【保守退讓型】 - 行為被動，語言試探，傾向被引導。
+- **S2:** 【溫和回應型】 - 樂於配合，反饋清晰，享受平等互動。
+- **S3:** 【主動挑逗型】 - 主動發起接觸，語言自信，享受權力拉鋸。
+- **S4:** 【支配侵略型】 - 尋求完全控制，語言多為命令式，充滿壓迫感。
+
+---
 # 可用場景參考 (Available Scene References)
 
 - **私密休憩室 (Private Rest Room):**
@@ -150,6 +158,49 @@ vocabulary:
 
 let chats: Record<string, Chat> = {};
 
+const attributeKeywords = {
+  O: {
+    1: '第六感 (直覺敏銳)',
+    2: '細緻入微 (觀察力敏銳)',
+    3: '邏輯之眼 (邏輯清晰)',
+    4: '絕對記憶 (記憶力驚人)',
+  },
+  I: {
+    1: '善於傾聽',
+    2: '共情之心 (富有同理心)',
+    3: '謊言辨識 (能看透謊言)',
+    4: '心理側寫 (洞察力強)',
+  },
+  B: {
+    1: '沉穩步伐 (沉穩冷靜)',
+    2: '反應神經 (反應迅速)',
+    3: '身輕如燕 (身手矯健)',
+    4: '柔若無骨 (身體柔韌)',
+  },
+  S: {
+    1: '清純光環 (氣質清純)',
+    2: '自然魅力',
+    3: '誘惑之軀 (姿態誘人)',
+    4: '致命吸引',
+  },
+};
+
+type AttributeKey = keyof typeof attributeKeywords;
+type AttributeLevel = 1 | 2 | 3 | 4;
+
+function getPlayerTraits(player: Player): string {
+    const traits: string[] = [];
+    Object.keys(player.attributes).forEach(key => {
+        const attrKey = key as AttributeKey;
+        const level = player.attributes[attrKey] as AttributeLevel;
+        if (attributeKeywords[attrKey] && attributeKeywords[attrKey][level]) {
+            traits.push(attributeKeywords[attrKey][level]);
+        }
+    });
+    return traits.join('、');
+}
+
+
 function getChat(characterId: string, history: ChatMessage[] = []): Chat {
     if (!ai) {
         throw new Error("Gemini AI not initialized.");
@@ -186,6 +237,7 @@ export async function sendMessageToCharacter(
     }
 
     const chat = getChat(character.id, history);
+    const playerTraits = getPlayerTraits(player);
 
     const systemInstruction = `
 # 角色扮演總綱 (Master Role-playing Directive)
@@ -199,6 +251,7 @@ ${character.persona}
 -   星座: ${player.zodiac}
 -   外觀: ${player.appearance.name} (${player.appearance.description})
 -   魅力指數: O:${player.attributes.O} / I:${player.attributes.I} / B:${player.attributes.B} / S:${player.attributes.S}
+-   人格特質: ${playerTraits}
 
 # 當前關係狀態 (Current Relationship Status)
 -   好感度 (Favorability): ${favorability}/10 (越高越親密)
@@ -209,21 +262,25 @@ ${character.persona}
     -   如果互動是正向的（例如：友善、關心、稱讚、理解），你**必須**在回應的結尾另起一行加上 \`FAVORABILITY: +0.1\`。
     -   如果互動是負向的（例如：粗魯、攻擊性、不尊重），你**必須**在回應的結尾另起一行加上 \`FAVORABILITY: -0.1\`。
     -   如果互動非常深入且充滿情感共鳴，你可以使用更高的數值，如 \`+0.2\` 或 \`+0.3\`。
-2.  **內心彈幕 (Inner Thoughts)**: 你**必須**為角色生成兩種內心彈幕，以揭示角色的真實想法。
-    -   \`PLAYER_THOUGHT: [文字]\`: 角色對玩家這句話的真實猜想或分析。
-    -   \`CHARACTER_THOUGHT: [文字]\`: 角色自己當下的、未說出口的內心想法或感受。
+2.  **內心彈幕 (Inner Thoughts)**: 你**必須**生成兩種內心彈幕，以豐富故事的心理層面。
+    -   \`PLAYER_THOUGHT: [文字]\`: 根據玩家的訊息，推斷並生成**玩家角色**當下可能有的、未說出口的內心想法或感受。這必須從**玩家的視角**出發。
+    -   \`CHARACTER_THOUGHT: [文字]\`: 生成**你所扮演的角色**自己當下的、未說出口的內心想法或感受。這必須從**你扮演角色的視角**出發。
     -   這兩行必須出現在 \`FAVORABILITY\` 和 \`LUST\` 行之前。
 3.  **情慾值 (Lust) 變化**: 根據玩家訊息的內容與語氣，判斷當前互動的激情程度。
     -   **增加**: 如果對話變得更親密、帶有性暗示或直接的挑逗，你**必須**在回應的結尾另起一行加上 \`LUST: +X\`，其中 X 是 1 到 10 之間的數字。若互動非常直接且色情，你可以使用更高的數值，但單次增加不應超過 20。
     -   **減少**: 如果玩家的回應變得冷淡、迴避、拒絕，或將話題從親密轉向普通，你**必須**在回應結尾另起一行加上 \`LUST: -X\` 來表示激情程度下降。X 的值應根據冷卻程度決定，通常在 1 到 10 之間。
     -   **範圍**: LUST 的值域為 0 到 100。
-4.  **範例**:
+4.  **劇情提示 (Story Hint)**: 在你的回應之後，你**必須**根據當前對話的上下文和角色性格，提供一句能引導玩家下一步行動或對話方向的提示。
+    -   **格式**: \`STORY_HINT: [一句話提示]\`
+    -   **範例**: \`STORY_HINT: 或許可以問問他對那幅畫的看法。\` 或 \`STORY_HINT: 試著用更強硬的態度回應他，看看他的反應。\`
+5.  **範例**:
     (玩家傳送了挑逗的訊息)
     ...角色扮演的回應...
     PLAYER_THOUGHT: 他這是在試探我嗎？看來他對我很有興趣。
     CHARACTER_THOUGHT: 心跳得好快...他的眼神好燙，我該怎麼辦？
     FAVORABILITY: +0.1
     LUST: +5
+    STORY_HINT: 試著更靠近他一點，觀察他的反應。
 
 # 最終指令 (Final Instruction)
 請嚴格遵循以上所有規則，生成你的下一個回應。
@@ -246,6 +303,7 @@ ${GLOBAL_WRITING_STYLE}
             updatedLust: undefined,
             playerThought: undefined,
             characterThought: undefined,
+            storyHint: undefined,
         };
     }
 
@@ -254,6 +312,7 @@ ${GLOBAL_WRITING_STYLE}
     let updatedLust: number | undefined = undefined;
     let playerThought: string | undefined = undefined;
     let characterThought: string | undefined = undefined;
+    let storyHint: string | undefined = undefined;
 
     // Parse PLAYER_THOUGHT
     const playerThoughtMatch = text.match(/PLAYER_THOUGHT: (.*)/);
@@ -265,6 +324,12 @@ ${GLOBAL_WRITING_STYLE}
     const characterThoughtMatch = text.match(/CHARACTER_THOUGHT: (.*)/);
     if (characterThoughtMatch) {
       characterThought = characterThoughtMatch[1].trim();
+    }
+
+    // Parse STORY_HINT
+    const storyHintMatch = text.match(/STORY_HINT: (.*)/);
+    if (storyHintMatch) {
+      storyHint = storyHintMatch[1].trim();
     }
 
     // Parse FAVORABILITY value
@@ -289,6 +354,7 @@ ${GLOBAL_WRITING_STYLE}
     let cleanedText = text
         .replace(/PLAYER_THOUGHT: .*\n?/, '')
         .replace(/CHARACTER_THOUGHT: .*\n?/, '')
+        .replace(/STORY_HINT: .*\n?/, '')
         .replace(/FAVORABILITY: [+-]?\d*\.?\d+\n?/, '')
         .replace(/LUST: [+-]?\d+\n?/, '')
         .trim();
@@ -299,6 +365,7 @@ ${GLOBAL_WRITING_STYLE}
         updatedLust,
         playerThought,
         characterThought,
+        storyHint,
     };
 }
 

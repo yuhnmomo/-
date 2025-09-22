@@ -46,6 +46,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const EMOJIS = ['😍','❤️','😘','🫣','🤤','😑','😒','🙄','😬','😮‍💨','😡','💋','💢','💦','🥺','🥹','😝','😆','🤣','😂','😰','😤','😭','😱','💖','😽','🥵','😵','😎'];
 
@@ -55,6 +56,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
   useEffect(scrollToBottom, [messages]);
   
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'; // Reset height to recalculate
+        const scrollHeight = textareaRef.current.scrollHeight;
+        textareaRef.current.style.height = `${scrollHeight}px`;
+    }
+  }, [userQuery]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -198,18 +208,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         )}
         <div className="flex items-center gap-3">
           <textarea
+            ref={textareaRef}
             value={userQuery}
             onChange={(e) => setUserQuery(e.target.value)}
             placeholder={placeholderText}
-            className="flex-grow h-10 min-h-[40px] py-2 px-3 border border-[#FFD0A6]/50 bg-[#FFFCF9] text-stone-800 placeholder-stone-500 rounded-lg focus:ring-2 focus:ring-[#FFD0A6] transition-shadow resize-none text-sm"
+            className="flex-grow max-h-20 min-h-[40px] py-2 px-3 border border-[#FFD0A6]/50 bg-[#FFFCF9] text-stone-800 placeholder-stone-500 rounded-lg focus:ring-2 focus:ring-[#FFD0A6] transition-shadow resize-none text-sm chat-container"
             rows={1}
             disabled={isLoading || !activeCharacter}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
           />
           <button
             ref={emojiButtonRef}
