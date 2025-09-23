@@ -9,12 +9,18 @@ export enum MessageSender {
   SYSTEM = 'system',
 }
 
+export interface Greetings {
+  cold: string[];      // Favorability < 1
+  warm: string[];      // Favorability >= 1 and < 4
+  intimate: string[];  // Favorability >= 4
+}
+
 export interface Character {
   id: string;
   name: string;
   avatar: string; // Emoji or URL
   persona: string; // System instruction for the AI model
-  greeting: string; // The character's first message
+  greetings: Greetings;
   description?: string;
 }
 
