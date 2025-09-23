@@ -340,6 +340,7 @@ const App: React.FC = () => {
   const [messageCounters, setMessageCounters] = useState<Record<string, number>>({});
   const [notebooks, setNotebooks] = useState<Record<string, string>>({});
   const [lightboxImageUrl, setLightboxImageUrl] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   // --- Game State Management ---
 
@@ -416,6 +417,16 @@ const App: React.FC = () => {
       }
     }
   }, [appState, loadGameState]);
+
+  // Effect to handle toast message auto-hide
+  useEffect(() => {
+    if (toastMessage) {
+      const timer = setTimeout(() => {
+        setToastMessage(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toastMessage]);
   
   // --- Handlers ---
   
@@ -543,6 +554,7 @@ const App: React.FC = () => {
     if (!character) return;
     
     const currentHistory = chatHistories[activeCharacterId] || [];
+    const currentNotebook = notebooks[activeCharacterId] || '';
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'chat',
@@ -557,7 +569,7 @@ const App: React.FC = () => {
 
     try {
         const favorability = favorabilityData[activeCharacterId] || 0;
-        const response = await sendMessageToCharacter(character, player, query, currentHistory, favorability);
+        const response = await sendMessageToCharacter(character, player, query, currentHistory, favorability, currentNotebook);
         
         const modelMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
@@ -625,42 +637,49 @@ const App: React.FC = () => {
     const character = CHARACTERS.find(c => c.id === characterId);
     if (!character) return;
 
-    const historyToSummarize = chatHistories[characterId] || [];
-    if (historyToSummarize.length > 1) { // Only summarize if there's a conversation
-      const finalSummary = await generateConversationSummary(character, player, historyToSummarize);
-      const summaryText = `--- 對話重置前的最終摘要 (${new Date().toLocaleString()}) ---\n${finalSummary}\n\n`;
-      // Prepend the summary to the existing notes
-      setNotebooks(prev => ({
-        ...prev,
-        [characterId]: summaryText + (prev[characterId] || ''),
-      }));
-    }
+    setIsLoading(true);
+    try {
+        const historyToSummarize = chatHistories[characterId] || [];
+        if (historyToSummarize.length > 1) { // Only summarize if there's a conversation
+          const finalSummary = await generateConversationSummary(character, player, historyToSummarize);
+          const summaryText = `--- 對話重置前的最終摘要 (${new Date().toLocaleString()}) ---\n${finalSummary}\n\n`;
+          setNotebooks(prev => ({
+            ...prev,
+            [characterId]: summaryText + (prev[characterId] || ''),
+          }));
+        }
 
-    setChatHistories(prev => {
-      const newHistories = { ...prev };
-      delete newHistories[characterId];
-      return newHistories;
-    });
-    setMessageCounters(prev => {
-        const newCounters = { ...prev };
-        delete newCounters[characterId];
-        return newCounters;
-    });
-    setPlayer(p => p ? ({ ...p, lust: 0 }) : null);
-    resetChat(characterId);
-    
-    // After resetting, add the greeting message to start fresh
-    const greetingMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'chat',
-      text: character.greeting,
-      sender: MessageSender.MODEL,
-      timestamp: new Date(),
-    };
-    setChatHistories(prev => ({
-      ...prev,
-      [characterId]: [greetingMessage],
-    }));
+        setChatHistories(prev => {
+          const newHistories = { ...prev };
+          delete newHistories[characterId];
+          return newHistories;
+        });
+        setMessageCounters(prev => {
+            const newCounters = { ...prev };
+            delete newCounters[characterId];
+            return newCounters;
+        });
+        setPlayer(p => p ? ({ ...p, lust: 0 }) : null);
+        resetChat(characterId);
+        
+        const greetingMessage: ChatMessage = {
+          id: Date.now().toString(),
+          type: 'chat',
+          text: character.greeting,
+          sender: MessageSender.MODEL,
+          timestamp: new Date(),
+        };
+        setChatHistories(prev => ({
+          ...prev,
+          [characterId]: [greetingMessage],
+        }));
+        setToastMessage('對話已重置，摘要已存入筆記本。');
+    } catch(error) {
+        console.error("Failed during conversation reset:", error);
+        setToastMessage("重置對話時發生錯誤。");
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const handleManualSummary = async (characterId: string) => {
@@ -674,20 +693,19 @@ const App: React.FC = () => {
       try {
         const summary = await generateConversationSummary(character, player, historyToSummarize);
         const summaryText = `--- 手動摘要 (${new Date().toLocaleString()}) ---\n${summary}\n\n`;
-        // Prepend the summary to the existing notes
         setNotebooks(prev => ({
           ...prev,
           [characterId]: summaryText + (prev[characterId] || ''),
         }));
-        alert('摘要已成功存入筆記本！');
+        setToastMessage('摘要已成功存入筆記本！');
       } catch (error) {
         console.error("Failed to generate manual summary:", error);
-        alert("生成摘要時發生錯誤。");
+        setToastMessage("生成摘要時發生錯誤。");
       } finally {
         setIsLoading(false);
       }
     } else {
-      alert("對話內容太少，無法生成摘要。");
+      setToastMessage("對話內容太少，無法生成摘要。");
     }
   };
 
@@ -809,6 +827,12 @@ const App: React.FC = () => {
       <section className={`h-full min-w-0 ${showSidebar ? 'flex-1' : 'w-full'}`}>
         {renderMainContent()}
       </section>
+
+      {toastMessage && (
+        <div className="fixed top-8 left-1/2 -translate-x-1/2 bg-stone-800/90 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in backdrop-blur-sm">
+          {toastMessage}
+        </div>
+      )}
 
       {lightboxImageUrl && (
         <ImageLightbox imageUrl={lightboxImageUrl} onClose={() => setLightboxImageUrl(null)} />

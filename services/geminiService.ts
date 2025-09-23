@@ -231,6 +231,7 @@ export async function sendMessageToCharacter(
     message: string,
     history: ChatMessage[],
     favorability: number,
+    notebookContent: string,
 ) {
     if (!ai) {
         throw new Error("Gemini AI not initialized.");
@@ -256,6 +257,14 @@ ${character.persona}
 # 當前關係狀態 (Current Relationship Status)
 -   好感度 (Favorability): ${favorability}/10 (越高越親密)
 -   情慾值 (Lust): ${player.lust}/100 (目前的激情程度)
+
+${notebookContent ? `
+# 玩家的筆記 (Player's Notes - CRITICAL CONTEXT)
+# 這是玩家記錄的關於你的關鍵記憶和前情提要。你必須將這些內容視為已經發生的事實，並在你的回應中自然地體現出來。
+---
+${notebookContent}
+---
+` : ''}
 
 # 核心互動機制 (Core Interaction Mechanics)
 1.  **好感度 (Favorability) 變化**: 根據你對玩家訊息的解讀，判斷互動的品質。
@@ -388,7 +397,7 @@ export async function generateConversationSummary(
         .join('\n');
 
     const prompt = `
-請為以下這段 ${player.name} 與 ${character.name.split(' (')[0]} 的對話，生成一段約 100-150 字的簡潔、中立、客觀的摘要，記錄下發生的關鍵事件和重要的情感轉折。請使用第三人稱視角，並以繁體中文書寫。
+請為以下這段 ${player.name} 與 ${character.name.split(' (')[0]} 的對話，生成一段約 50-80 字的簡潔、中立、客觀的摘要，記錄下發生的關鍵事件和重要的情感轉折。請使用第三人稱視角，並以繁體中文書寫。
 
 對話紀錄：
 ---

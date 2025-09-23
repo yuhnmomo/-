@@ -133,7 +133,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   activeCharacter.avatar
                 )}
               </div>
-              <div className="flex flex-col items-start gap-1.5">
+              <div className="flex flex-col items-start gap-1">
                 <h2 className="text-2xl font-semibold text-stone-800">{activeCharacter.name}</h2>
                 <div className="flex items-center gap-2 flex-wrap">
                     <button
@@ -169,6 +169,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       </p>
                     )}
                 </div>
+                 <p className="text-xs text-stone-500 mt-1.5">
+                  💡 AI 會讀取「筆記本」作為長期記憶，可「儲存摘要」或「重置對話」來歸檔紀錄。
+                </p>
               </div>
             </>
           ) : (

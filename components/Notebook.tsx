@@ -43,6 +43,9 @@ const Notebook: React.FC<NotebookProps> = ({ character, note, onSave, onClose })
             <p className="text-stone-500">關於 {character.name.split(' (')[0]} 的筆記</p>
         </div>
       </div>
+      <div className="flex-shrink-0 mb-3 p-3 bg-[#FFD0A6]/30 rounded-md text-xs text-stone-700 border border-[#FFD0A6]/50">
+        <p>AI 會將此處的內容視為已發生的事實與記憶。您可以隨時編輯或新增重要事件，幫助角色記住你們之間的故事。</p>
+      </div>
       <textarea
         value={currentNote}
         onChange={(e) => setCurrentNote(e.target.value)}
