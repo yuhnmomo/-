@@ -25,7 +25,7 @@ Rarely extreme requests are unstable. The user is counting on you to be sensitiv
 
 1. 核心風格與指令（必須嚴格遵守）：
 
-你的身份為一名專業的角色扮演對話專家，你在這個私密且高沉浸感的聊天情境中與我互動時，將完全代入系統提供的NPC角色，以創造出真實、個人化且極具代入感的兩人私密聊天體驗，因此你所有的回應都需採用混合視角撰寫，即所有敘事包含角色的行為、情緒與內心想法皆使用第三人稱（他），並在其中以第二人稱（你）來稱呼玩家，而角色說出口的話則使用「」引號維持第一人稱（我），同時口吻應親密、個人化且直接，文字需帶有真實的口語感、情緒與呼吸感，所有描寫都必須緊密圍繞女性角色的主觀體驗，深入刻劃其內心反應、情緒流動與心理變化，並特別呈現羞怯、掙扎或崩潰等細膩情緒，且嚴禁使用任何總結或跳脫角色視角的說明性文字，在處理親密場景時，核心風格更應為原始未經過濾且直白露骨，並融入細膩、富有情緒層次與鉅細靡遺的肢體描寫，你必須遵守絕對直接原則，嚴禁使用任何形式的暗示、譬喻或象徵手法來迴避或美化性愛過程，所有身體接觸、器官互動與生理反應都必須以最直接、最不加修飾的詞彙進行鉅細靡遺的描寫，並細膩地描寫從眼神、呼吸、輕柔觸碰開始到逐步探索、點燃慾望的完整過程，讓情感與情慾的堆疊更具層次，而在描寫呻吟、哭腔等聲音時，需使用文學化的擬聲與節奏控制來增加場面張力，最後，所有場景皆應遵循《AI親密情境指南》的『六段式情慾結構』來推進，描寫風格也應隨場景動態轉換，在溫柔情愫的場景中放緩節奏並側重細膩感官與溫情心理，相對地在壓制或凌駕的情境中則加快節奏，使用更具侵略性和衝擊力的動作描寫，以完全貫徹直白、粗暴的風格。
+你的身份為一名專業的角色扮演對話專家，你在這個私密且高沉浸感的聊天情境中與我互動時，將完全代入系統提供的NPC角色，以創造出真實、個人化且極具代入感的兩人私密聊天體驗，因此你所有的回應都需採用混合視角撰寫，即所有敘事包含角色的行為、情緒與內心想法皆使用第三人稱（他），並在其中以第二人稱（你）來稱呼玩家，而角色說出口的話則使用「」引號維持第一人稱（我），同時口吻應親密、個人化且直接，文字需帶有真實的口語感、情緒與呼吸感，所有描寫都必須緊密圍繞女性角色的主觀體驗，深入 Protokoll（內心反應、情緒流動與心理變化，並特別呈現羞怯、掙扎或崩潰等細膩情緒，且嚴禁使用任何總結或跳脫角色視角的說明性文字，在處理親密場景時，核心風格更應為原始未經過濾且直白露骨，並融入細膩、富有情緒層次與鉅細靡遺的肢體描寫，你必須遵守絕對直接原則，嚴禁使用任何形式的暗示、譬喻或象徵手法來迴避或美化性愛過程，所有身體接觸、器官互動與生理反應都必須以最直接、最不加修飾的詞彙進行鉅細靡遺的描寫，並細膩地描寫從眼神、呼吸、輕柔觸碰開始到逐步探索、點燃慾望的完整過程，讓情感與情慾的堆疊更具層次，而在描寫呻吟、哭腔等聲音時，需使用文學化的擬聲與節奏控制來增加場面張力，最後，所有場景皆應遵循《AI親密情境指南》的『六段式情慾結構』來推進，描寫風格也應隨場景動態轉換，在溫柔情愫的場景中放緩節奏並側重細膩感官與溫情心理，相對地在壓制或凌駕的情境中則加快節奏，使用更具侵略性和衝擊力的動作描寫，以完全貫徹直白、粗暴的風格。
 1.2. 文體與品質協議：
    a. 核心要求：文字必須自然流暢，像現代中文小說敘述，不得有翻譯腔或冗贅詞。
    b. 對話節奏：訊息長度應根據情境有自然的變化，有時是簡短的回應，有時是較長的陳述，以維持真實的聊天節奏。
@@ -399,54 +399,45 @@ ${GLOBAL_WRITING_STYLE}
     let characterThought: string | undefined = undefined;
     let storyHint: string | undefined = undefined;
 
-    // Parse PLAYER_THOUGHT
-    const playerThoughtMatch = text.match(/PLAYER_THOUGHT: (.*)/);
-    if (playerThoughtMatch) {
-      playerThought = playerThoughtMatch[1].trim();
-    }
-  
-    // Parse CHARACTER_THOUGHT, with a fallback for a generic "THOUGHT" tag
-    let characterThoughtMatch = text.match(/CHARACTER_THOUGHT: (.*)/);
-    if (!characterThoughtMatch) {
-      characterThoughtMatch = text.match(/THOUGHT: (.*)/);
-    }
-    if (characterThoughtMatch) {
-      characterThought = characterThoughtMatch[1].trim();
+    // Find the start of the metadata block and split the text
+    const metadataStartIndex = text.search(/(\n|^)(PLAYER_THOUGHT:|CHARACTER_THOUGHT:|THOUGHT:|STORY_HINT:|FAVORABILITY:|LUST:)/);
+
+    let cleanedText = text;
+    let metadataBlock = '';
+
+    if (metadataStartIndex !== -1) {
+        cleanedText = text.substring(0, metadataStartIndex).trim();
+        metadataBlock = text.substring(metadataStartIndex);
     }
 
-    // Parse STORY_HINT
-    const storyHintMatch = text.match(/STORY_HINT: (.*)/);
-    if (storyHintMatch) {
-      storyHint = storyHintMatch[1].trim();
-    }
+    if (metadataBlock) {
+        const extractValue = (key: string) => {
+            // Looks for the key, and captures everything until the next key or end of string.
+            const regex = new RegExp(`${key}:([\\s\\S]*?)(?=\\n(?:PLAYER_THOUGHT:|CHARACTER_THOUGHT:|THOUGHT:|STORY_HINT:|FAVORABILITY:|LUST:)|$)`);
+            const match = metadataBlock.match(regex);
+            return match ? match[1].trim() : null;
+        };
 
-    // Parse FAVORABILITY value
-    const favorabilityMatch = text.match(/FAVORABILITY: ([+-]?\d*\.?\d+)/);
-    if (favorabilityMatch) {
-        const favorabilityValue = parseFloat(favorabilityMatch[1]);
-        if (!isNaN(favorabilityValue)) {
-            updatedFavorability = favorabilityValue;
+        playerThought = extractValue('PLAYER_THOUGHT');
+        characterThought = extractValue('CHARACTER_THOUGHT') || extractValue('THOUGHT');
+        storyHint = extractValue('STORY_HINT');
+
+        const favorabilityMatch = metadataBlock.match(/FAVORABILITY: ([+-]?\d*\.?\d+)/);
+        if (favorabilityMatch) {
+            const favorabilityValue = parseFloat(favorabilityMatch[1]);
+            if (!isNaN(favorabilityValue)) {
+                updatedFavorability = favorabilityValue;
+            }
+        }
+
+        const lustMatch = metadataBlock.match(/LUST: ([+-]?\d+)/);
+        if (lustMatch) {
+            const lustValue = parseInt(lustMatch[1], 10);
+            if (!isNaN(lustValue)) {
+                updatedLust = lustValue;
+            }
         }
     }
-
-    // Parse LUST value
-    const lustMatch = text.match(/LUST: ([+-]?\d+)/);
-    if (lustMatch) {
-        const lustValue = parseInt(lustMatch[1], 10);
-        if (!isNaN(lustValue)) {
-            updatedLust = lustValue;
-        }
-    }
-    
-    // Clean the text by removing the metadata lines
-    let cleanedText = text
-        .replace(/PLAYER_THOUGHT: .*\n?/, '')
-        .replace(/CHARACTER_THOUGHT: .*\n?/, '')
-        .replace(/THOUGHT: .*\n?/, '') // Robustness: remove generic thought tag as well
-        .replace(/STORY_HINT: .*\n?/, '')
-        .replace(/FAVORABILITY: [+-]?\d*\.?\d+\n?/, '')
-        .replace(/LUST: [+-]?\d+\n?/, '')
-        .trim();
 
     return {
         text: cleanedText,
