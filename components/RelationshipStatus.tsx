@@ -7,14 +7,14 @@ import React from 'react';
 import { Character, Player } from '../types';
 import { Heart } from 'lucide-react';
 
-const getFavorabilityLevelString = (value: number): string => {
-  if (value < 0) return "敵對";
-  if (value < 1) return "陌生";
-  if (value < 2) return "認識";
-  if (value < 3) return "友好";
-  if (value < 4) return "信賴";
-  if (value < 5) return "親密";
-  return "命定";
+const getFavorabilityStyle = (value: number): { emoji: string; color: string; level: string } => {
+  if (value < 0) return { emoji: '💔', color: 'text-slate-500', level: '敵對' };
+  if (value < 1) return { emoji: '🤍', color: 'text-stone-500', level: '陌生' };
+  if (value < 2) return { emoji: '🩷', color: 'text-cyan-600', level: '認識' };
+  if (value < 3) return { emoji: '❤️', color: 'text-emerald-600', level: '友好' };
+  if (value < 4) return { emoji: '💗', color: 'text-amber-600', level: '信賴' };
+  if (value < 5) return { emoji: '❤️‍🔥', color: 'text-pink-600', level: '親密' };
+  return { emoji: '💖', color: 'text-rose-600', level: '命定' };
 };
 
 interface RelationshipStatusProps {
@@ -36,7 +36,7 @@ const RelationshipStatus: React.FC<RelationshipStatusProps> = ({ characters, pla
             .filter(c => c.id !== 'system_creator')
             .map(char => {
             const favorability = favorabilityData[char.id] || 0;
-            const level = getFavorabilityLevelString(favorability);
+            const { emoji, color, level } = getFavorabilityStyle(favorability);
             return (
               <div 
                 key={char.id}
@@ -51,8 +51,8 @@ const RelationshipStatus: React.FC<RelationshipStatusProps> = ({ characters, pla
                   )}
                 </div>
                 <h3 className="font-semibold text-lg text-stone-800">{char.name.split(' (')[0]}</h3>
-                <div className="flex items-center gap-2 mt-2 text-[#E098AE]">
-                  <Heart size={16} />
+                <div className={`flex items-center gap-2 mt-2 ${color}`}>
+                  <span className="text-lg">{emoji}</span>
                   <span className="font-medium text-sm">{level}</span>
                 </div>
               </div>

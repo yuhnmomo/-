@@ -62,6 +62,20 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
       reader.readAsDataURL(file);
     }
   };
+  
+  const getDefaultAvatarUrl = (gender: '男' | '女', appearanceId: string): string | undefined => {
+    if (!appearanceId) return undefined;
+    const baseUrl = 'https://raw.githubusercontent.com/yuhnmomo/yuhnmomo.github.io/main/Role/RLGuide/images/';
+    const match = appearanceId.match(/\d{2}$/);
+    if (!match) return undefined;
+    const num = match[0];
+    if (gender === '男') {
+        return `${baseUrl}M${num}.png`;
+    } else {
+        return `${baseUrl}F${num}.png`;
+    }
+  };
+
 
   const handleSave = () => {
     if (!name.trim() || !nickname.trim() || !salutation.trim() || !zodiac.trim()) {
@@ -72,6 +86,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
     const selectedAppearance = availableAppearances.find(app => app.id === selectedAppearanceId);
 
     if (selectedAppearance) {
+      const defaultAvatarUrl = getDefaultAvatarUrl(gender, selectedAppearance.id);
+      const finalAvatar = avatar || defaultAvatarUrl;
+
       const playerData: Player = {
         name,
         nickname,
@@ -80,7 +97,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
         zodiac,
         appearance: selectedAppearance,
         attributes: selectedAppearance.attributes,
-        avatar,
+        avatar: finalAvatar,
         // Use existing lust value or default to 0
         lust: initialData?.lust || 0,
       };
@@ -94,6 +111,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
   
   const availableAppearances = gender === '男' ? maleAppearances : femaleAppearances;
   const selectedAppearance = availableAppearances.find(app => app.id === selectedAppearanceId);
+  const displayAvatar = avatar || getDefaultAvatarUrl(gender, selectedAppearanceId);
 
   return (
     <div className="flex-grow overflow-y-auto chat-container pr-2">
@@ -102,7 +120,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ initialData, onSave, buttonText
         {/* Row 1: Avatar */}
         <div className="flex flex-col items-center gap-2">
             <div className="w-24 h-24 rounded-full bg-stone-200 flex-shrink-0 overflow-hidden border-2 border-black/10">
-                {avatar ? <img src={avatar} alt="Avatar Preview" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-stone-500 text-sm">無頭像</div>}
+                {displayAvatar ? <img src={displayAvatar} alt="Avatar Preview" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-stone-500 text-sm">無頭像</div>}
             </div>
             <label htmlFor="avatar-upload" className="cursor-pointer bg-stone-200 hover:bg-stone-300 text-stone-700 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors flex items-center gap-1.5">
                 <ImageUp size={16} />

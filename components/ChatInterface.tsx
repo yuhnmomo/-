@@ -101,12 +101,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const handleEmojiSelect = (emoji: string) => {
     setUserQuery(prev => prev + emoji);
   };
-
-  const handleUseHint = (hint: string) => {
-    setUserQuery(hint);
+  
+  const handleApplyHint = (hintText: string) => {
+    setUserQuery(hintText);
     textareaRef.current?.focus();
   };
-
 
   const placeholderText = activeCharacter 
     ? `與 ${activeCharacter.name} 對話...`
@@ -196,7 +195,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           {activeCharacter ? (
             <>
               {messages.map((msg) => (
-                <MessageItem key={msg.id} message={msg} character={activeCharacter} player={player} onUseHint={handleUseHint} />
+                <MessageItem key={msg.id} message={msg} character={activeCharacter} player={player} onApplyHint={handleApplyHint} />
               ))}
             </>
           ) : (

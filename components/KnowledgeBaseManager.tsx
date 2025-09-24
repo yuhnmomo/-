@@ -4,7 +4,7 @@
 */
 
 import React from 'react';
-import { Menu, Heart, Settings as SettingsIcon } from 'lucide-react';
+import { Menu, Settings as SettingsIcon } from 'lucide-react';
 import { Character } from '../types';
 
 interface CharacterSelectorProps {
@@ -18,15 +18,16 @@ interface CharacterSelectorProps {
   favorabilityData: Record<string, number>;
 }
 
-const getFavorabilityLevelString = (value: number): string => {
-  if (value < 0) return "敵對";
-  if (value < 1) return "陌生";
-  if (value < 2) return "認識";
-  if (value < 3) return "友好";
-  if (value < 4) return "信賴";
-  if (value < 5) return "親密";
-  return "命定";
+const getFavorabilityStyle = (value: number): { emoji: string; color: string; level: string } => {
+  if (value < 0) return { emoji: '💔', color: 'text-slate-500', level: '敵對' };
+  if (value < 1) return { emoji: '🤍', color: 'text-stone-500', level: '陌生' };
+  if (value < 2) return { emoji: '🩷', color: 'text-cyan-600', level: '認識' };
+  if (value < 3) return { emoji: '❤️', color: 'text-emerald-600', level: '友好' };
+  if (value < 4) return { emoji: '💗', color: 'text-amber-600', level: '信賴' };
+  if (value < 5) return { emoji: '❤️‍🔥', color: 'text-pink-600', level: '親密' };
+  return { emoji: '💖', color: 'text-rose-600', level: '命定' };
 };
+
 
 const CharacterSelector: React.FC<CharacterSelectorProps> = ({ 
   characters, 
@@ -75,7 +76,7 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
       <div className="flex-grow overflow-y-auto space-y-2 chat-container pt-2 border-t border-[#FFCEC7]/50">
         {sortedCharacters.map((char) => {
             const favorability = favorabilityData[char.id] || 0;
-            const level = getFavorabilityLevelString(favorability);
+            const { emoji, color, level } = getFavorabilityStyle(favorability);
             return (
               <button
                 key={char.id}
@@ -98,8 +99,8 @@ const CharacterSelector: React.FC<CharacterSelectorProps> = ({
                 </div>
                 <div>
                   <p className="font-semibold text-lg text-stone-900">{char.name}</p>
-                  <div className="flex items-center gap-1.5 mt-1 text-sm text-[#E098AE]">
-                      <Heart size={14} />
+                  <div className={`flex items-center gap-1.5 mt-1 text-sm font-medium ${color}`}>
+                      <span className="text-base">{emoji}</span>
                       <span>{level}</span>
                   </div>
                 </div>

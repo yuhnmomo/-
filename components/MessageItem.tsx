@@ -8,7 +8,7 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 // FIX: Remove MessageType as it's not an exported member of types.ts.
 import { ChatMessage, MessageSender, Player, Character } from '../types';
-import { Copy, Check, ArrowUpRight } from 'lucide-react';
+import { Copy, Check, Lightbulb, ArrowUpCircle } from 'lucide-react';
 
 marked.setOptions({
   highlight: function(code, lang) {
@@ -22,7 +22,7 @@ interface MessageItemProps {
   message: ChatMessage;
   character?: Character | null;
   player?: Player | null;
-  onUseHint?: (hint: string) => void;
+  onApplyHint?: (hintText: string) => void;
 }
 
 const getCharacterGender = (character: Character | null | undefined): '男' | '女' | 'unknown' => {
@@ -72,7 +72,7 @@ const SenderAvatar: React.FC<{ sender?: MessageSender, avatar?: string, player?:
 };
 
 
-const MessageItem: React.FC<MessageItemProps> = ({ message, character, player, onUseHint }) => {
+const MessageItem: React.FC<MessageItemProps> = ({ message, character, player, onApplyHint }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = () => {
@@ -96,27 +96,27 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player, o
       </div>
     );
   };
-  
-  const renderStoryHint = (hint: string) => {
+
+  const renderHint = (hint: string) => {
     return (
-      <div className="mt-2 text-xs text-stone-600 p-3 rounded-lg bg-[#FFFCF9]/80 border border-[#FFD0A6]/50 backdrop-blur-sm flex items-center justify-between gap-2">
-        <div>
-            <span className="font-semibold">📖 劇情提示：</span>
-            <span>{hint}</span>
+      <div className="mt-2 flex items-center justify-between gap-2 text-sm text-amber-800 bg-amber-100/70 p-3 rounded-lg border-l-4 border-amber-400">
+        <div className="flex items-start gap-2">
+            <Lightbulb size={18} className="flex-shrink-0 mt-0.5 text-amber-500" />
+            <p><span className="font-semibold">劇情提示：</span>{hint}</p>
         </div>
-        {onUseHint && (
-          <button
-            onClick={() => onUseHint(hint)}
-            className="p-1.5 rounded-full text-stone-500 hover:bg-[#FFD0A6]/50 hover:text-stone-800 transition-colors flex-shrink-0"
+        {onApplyHint && (
+          <button 
+            onClick={() => onApplyHint(hint)}
+            className="p-1.5 rounded-full text-amber-600 hover:bg-amber-200/80 hover:text-amber-800 transition-colors flex-shrink-0"
             aria-label="使用此提示"
           >
-            <ArrowUpRight size={14} />
+            <ArrowUpCircle size={18} />
           </button>
         )}
       </div>
     );
   };
-
+  
   const createMarkup = (text: string) => {
     // Sanitize to prevent XSS. In a real app, use a more robust library like DOMPurify.
     const sanitizedHtml = marked.parse(text, { breaks: true, gfm: true }) as string;
@@ -187,8 +187,9 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, character, player, o
             />
           )}
         </div>
+
+        {isModel && message.storyHint && renderHint(message.storyHint)}
         
-        {isModel && message.storyHint && renderStoryHint(message.storyHint)}
       </div>
        {isUser && (
         <SenderAvatar sender={message.sender} avatar={character?.avatar} player={player} />

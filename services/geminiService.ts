@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 
-import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { Character, Player, ChatMessage, MessageSender } from '../types';
 
 const API_KEY = process.env.API_KEY;
@@ -232,8 +232,6 @@ dialogue_seduction_module:
       支配侵略型: [快點插進來, 用力，不要停, 狠狠地撞我，不要憐惜, 把我弄壞, 操到我哭著求饒, 今晚不准放過我, 讓我腦子一片空白]
 `;
 
-let chats: Record<string, Chat> = {};
-
 const attributeKeywords = {
   O: {
     1: '第六感 (直覺敏銳)',
@@ -276,29 +274,10 @@ function getPlayerTraits(player: Player): string {
     return traits.join('、');
 }
 
-
-function getChat(characterId: string, history: ChatMessage[] = []): Chat {
-    if (!ai) {
-        throw new Error("Gemini AI not initialized.");
-    }
-    if (!chats[characterId]) {
-        const geminiHistory = history.map(msg => ({
-            role: msg.sender === MessageSender.USER ? 'user' : 'model',
-            parts: [{ text: msg.text }],
-        }));
-
-        chats[characterId] = ai.chats.create({
-            model: MODEL_NAME,
-            history: geminiHistory,
-        });
-    }
-    return chats[characterId];
-}
-
 export function resetChat(characterId: string) {
-    if (chats[characterId]) {
-        delete chats[characterId];
-    }
+    // This is now a no-op as the chat is stateless and managed by the App state.
+    // Kept for compatibility with the UI component call.
+    console.log(`Chat history for ${characterId} is managed by App state; no server-side reset needed.`);
 }
 
 export async function sendMessageToCharacter(
@@ -313,7 +292,6 @@ export async function sendMessageToCharacter(
         throw new Error("Gemini AI not initialized.");
     }
 
-    const chat = getChat(character.id, history);
     const playerTraits = getPlayerTraits(player);
 
     const systemInstruction = `
@@ -343,47 +321,80 @@ ${notebookContent}
 ` : ''}
 
 # 核心互動機制 (Core Interaction Mechanics)
-1.  **好感度 (Favorability) 變化**: 根據你對玩家訊息的解讀，判斷互動的品質。
-    -   如果互動是正向的（例如：友善、關心、稱讚、理解），你**必須**在回應的結尾另起一行加上 \`FAVORABILITY: +0.1\`。
-    -   如果互動是負向的（例如：粗魯、攻擊性、不尊重），你**必須**在回應的結尾另起一行加上 \`FAVORABILITY: -0.1\`。
-    -   如果互動非常深入且充滿情感共鳴，你可以使用更高的數值，如 \`+0.2\` 或 \`+0.3\`。
-2.  **內心彈幕 (Inner Thoughts)**: 你**必須**嚴格按照以下格式，生成兩種內心彈幕，且內容**必須**為繁體中文。
-    -   \`PLAYER_THOUGHT: [繁體中文文字]\`: 根據玩家的訊息，推斷並生成**玩家角色**當下可能有的、未說出口的內心想法或感受。這必須從**玩家的視角**出發。
-    -   \`CHARACTER_THOUGHT: [繁體中文文字]\`: 生成**你所扮演的角色**自己當下的、未說出口的內心想法或感受。這必須從**你扮演角色的視角**出發。
-    -   這兩行必須出現在 \`FAVORABILITY\` 和 \`LUST\` 行之前。嚴禁使用 \`THOUGHT:\` 或其他任何非指定的標籤。
-3.  **情慾值 (Lust) 變化**: 根據玩家訊息的內容與語氣，判斷當前互動的激情程度。
-    -   **增加**: 如果對話變得更親密、帶有性暗示或直接的挑逗，你**必須**在回應的結尾另起一行加上 \`LUST: +X\`，其中 X 是 1 到 10 之間的數字。若互動非常直接且色情，你可以使用更高的數值，但單次增加不應超過 20。
-    -   **減少**: 如果玩家的回應變得冷淡、迴避、拒絕，或將話題從親密轉向普通，你**必須**在回應結尾另起一行加上 \`LUST: -X\` 來表示激情程度下降。X 的值應根據冷卻程度決定，通常在 1 到 10 之間。
-    -   **範圍**: LUST 的值域為 0 到 100。
-4.  **劇情提示 (Story Hint)**: 在你的回應之後，你**必須**根據當前對話的上下文和角色性格，提供一句能引導玩家下一步行動或對話方向的提示。
-    -   **格式**: \`STORY_HINT: [一句話提示]\`
-    -   **範例**: \`STORY_HINT: 或許可以問問他對那幅畫的看法。\` 或 \`STORY_HINT: 試著用更強硬的態度回應他，看看他的反應。\`
-5.  **範例**:
-    (玩家傳送了挑逗的訊息)
-    ...角色扮演的回應...
-    PLAYER_THOUGHT: 他這是在試探我嗎？看來他對我很有興趣。
-    CHARACTER_THOUGHT: 心跳得好快...他的眼神好燙，我該怎麼辦？
-    FAVORABILITY: +0.1
-    LUST: +5
-    STORY_HINT: 試著更靠近他一點，觀察他的反應。
+你必須嚴格遵循 JSON 格式進行回應。你的整個輸出必須是一個符合下面描述的 JSON 物件。
+
+1.  **\`responseText\` (string)**: 你所扮演角色的回應內容，包括對話和動作描述。這是玩家會直接看到的訊息。
+2.  **\`playerThought\` (string)**: 根據玩家的訊息，推斷並生成 **玩家角色** 當下可能有的、未說出口的內心想法或感受。這必須從 **玩家的視角** 出發。
+3.  **\`characterThought\` (string)**: 生成 **你所扮演的角色** 自己當下的、未說出口的內心想法或感受。這必須從 **你扮演角色的視角** 出發。
+4.  **\`favorabilityChange\` (number)**: 根據互動品質判斷好感度變化。正向互動應為 \`0.1\`，負向為 \`-0.1\`。非常深入的互動可以是 \`0.2\` 或 \`0.3\`。如果沒有明顯變化，則為 \`0\`。
+5.  **\`lustChange\` (number)**: 根據互動的激情程度判斷情慾值變化。親密或挑逗的互動應為正數（例如 \`5\` 到 \`10\`），冷淡或拒絕的互動應為負數。如果沒有變化，則為 \`0\`。
+6.  **\`storyHint\` (string)**: 根據當前情境，提供一句 **具體的行動或對話建議** 給玩家，風格需符合以下五種之一：甜蜜型、撩人型、挑釁型、撒嬌型、試探型。例如：「用半開玩笑的語氣問他『是不是在想壞壞的事』」。
 
 # 最終指令 (Final Instruction)
-請嚴格遵循以上所有規則，生成你的下一個回應。
+請嚴格遵循以上所有規則，並將你的完整回應封裝在一個 JSON 物件中。
 ${GLOBAL_WRITING_STYLE}
 `;
 
-    // Combine system instruction with the user message
-    const fullPrompt = `${systemInstruction}\n\n玩家訊息: "${message}"`;
-    
-    const result = await chat.sendMessage({ message: fullPrompt });
+    const contentsWithHistory = [
+        ...history.map(msg => ({
+            role: msg.sender === MessageSender.USER ? 'user' : 'model',
+            parts: [{ text: msg.text }],
+        })),
+        {
+            role: 'user' as const,
+            parts: [{ text: message }],
+        }
+    ];
 
-    let text = result.text;
-    
-    // Gracefully handle empty or undefined responses
-    if (!text) {
-        console.warn("Gemini API returned an empty response.");
+    const responseSchema = {
+      type: Type.OBJECT,
+      properties: {
+        responseText: { type: Type.STRING, description: "角色的對話與行為，這是玩家會看到的內容。" },
+        playerThought: { type: Type.STRING, description: "推斷的玩家內心想法。" },
+        characterThought: { type: Type.STRING, description: "角色的內心想法。" },
+        favorabilityChange: { type: Type.NUMBER, description: "好感度變化值，例如 0.1, -0.1, 0。" },
+        lustChange: { type: Type.NUMBER, description: "情慾值變化，例如 5, -10, 0。" },
+        storyHint: { type: Type.STRING, description: "給玩家的下一步行動或對話提示。" },
+      },
+      required: ["responseText", "playerThought", "characterThought", "favorabilityChange", "lustChange", "storyHint"]
+    };
+
+    try {
+        const response = await ai.models.generateContent({
+            model: MODEL_NAME,
+            contents: contentsWithHistory,
+            config: {
+                systemInstruction,
+                responseMimeType: "application/json",
+                responseSchema: responseSchema,
+            },
+        });
+        
+        let jsonStr = response.text.trim();
+        
+        // The model might still wrap the JSON in markdown backticks
+        if (jsonStr.startsWith('```json')) {
+            jsonStr = jsonStr.substring(7);
+        }
+        if (jsonStr.endsWith('```')) {
+            jsonStr = jsonStr.substring(0, jsonStr.length - 3);
+        }
+
+        const parsedResponse = JSON.parse(jsonStr);
+
         return {
-            text: "（角色似乎一時語塞，沒有說話。）",
+            text: parsedResponse.responseText || "（角色陷入了沉默。或許是不知道該如何回應，或是對話內容觸及了無法回應的邊界。）",
+            updatedFavorability: parsedResponse.favorabilityChange,
+            updatedLust: parsedResponse.lustChange,
+            playerThought: parsedResponse.playerThought,
+            characterThought: parsedResponse.characterThought,
+            storyHint: parsedResponse.storyHint,
+        };
+
+    } catch (error) {
+        console.error("Error processing Gemini JSON response:", error);
+        return {
+            text: "抱歉，處理回應時發生了錯誤。請稍後再試。",
             updatedFavorability: undefined,
             updatedLust: undefined,
             playerThought: undefined,
@@ -391,62 +402,6 @@ ${GLOBAL_WRITING_STYLE}
             storyHint: undefined,
         };
     }
-
-
-    let updatedFavorability: number | undefined = undefined;
-    let updatedLust: number | undefined = undefined;
-    let playerThought: string | undefined = undefined;
-    let characterThought: string | undefined = undefined;
-    let storyHint: string | undefined = undefined;
-
-    // Find the start of the metadata block and split the text
-    const metadataStartIndex = text.search(/(\n|^)(PLAYER_THOUGHT:|CHARACTER_THOUGHT:|THOUGHT:|STORY_HINT:|FAVORABILITY:|LUST:)/);
-
-    let cleanedText = text;
-    let metadataBlock = '';
-
-    if (metadataStartIndex !== -1) {
-        cleanedText = text.substring(0, metadataStartIndex).trim();
-        metadataBlock = text.substring(metadataStartIndex);
-    }
-
-    if (metadataBlock) {
-        const extractValue = (key: string) => {
-            // Looks for the key, and captures everything until the next key or end of string.
-            const regex = new RegExp(`${key}:([\\s\\S]*?)(?=\\n(?:PLAYER_THOUGHT:|CHARACTER_THOUGHT:|THOUGHT:|STORY_HINT:|FAVORABILITY:|LUST:)|$)`);
-            const match = metadataBlock.match(regex);
-            return match ? match[1].trim() : null;
-        };
-
-        playerThought = extractValue('PLAYER_THOUGHT');
-        characterThought = extractValue('CHARACTER_THOUGHT') || extractValue('THOUGHT');
-        storyHint = extractValue('STORY_HINT');
-
-        const favorabilityMatch = metadataBlock.match(/FAVORABILITY: ([+-]?\d*\.?\d+)/);
-        if (favorabilityMatch) {
-            const favorabilityValue = parseFloat(favorabilityMatch[1]);
-            if (!isNaN(favorabilityValue)) {
-                updatedFavorability = favorabilityValue;
-            }
-        }
-
-        const lustMatch = metadataBlock.match(/LUST: ([+-]?\d+)/);
-        if (lustMatch) {
-            const lustValue = parseInt(lustMatch[1], 10);
-            if (!isNaN(lustValue)) {
-                updatedLust = lustValue;
-            }
-        }
-    }
-
-    return {
-        text: cleanedText,
-        updatedFavorability,
-        updatedLust,
-        playerThought,
-        characterThought,
-        storyHint,
-    };
 }
 
 
@@ -468,7 +423,12 @@ export async function generateConversationSummary(
         .join('\n');
 
     const prompt = `
-請為以下這段 ${player.name} 與 ${character.name.split(' (')[0]} 的對話，生成一段約 50-80 字的簡潔、中立、客觀的摘要，記錄下發生的關鍵事件和重要的情感轉折。請使用第三人稱視角，並以繁體中文書寫。
+請為以下這段 ${player.name} 與 ${character.name.split(' (')[0]} 的對話，生成一段約 50-80 字的簡潔、中立、客觀的摘要。
+
+**重要指示：**
+-   記錄下發生的關鍵事件和重要的情感轉折。
+-   **如果對話包含親密或成人內容，請務必使用非露骨、隱喻或委婉的語言來描述，同時確保摘要能準確反映事件的本質。**
+-   請使用第三人稱視角，並以繁體中文書寫。
 
 對話紀錄：
 ---
